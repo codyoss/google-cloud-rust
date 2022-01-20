@@ -37,11 +37,11 @@ use util::*;
 //       those in as well
 // TODO(codyoss): Should req params be moved to call instead of builder methods. If we
 //       don't do this we should generate in some validation.
-// TODO(codyoss): The base error type should likely be a struct in a common create. The one
-//       I created was to make iteration fast.
 // TODO(codyoss): Find a way to sniff the content type for uploads, or we just way the user must provide the content-type?
 // TODO(codyoss): support resumable/chunked uploads
 // TODO(codyoss): Consult storage team about proper retrying for downloads/uploads. This gets tricky fast.
+// TODO(codyoss): check repeated field and adjust
+// TODO(codyoss): Add extra docs for required call params
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "discogen")]
@@ -514,32 +514,28 @@ fn service_methods(service: &str, methods: &BTreeMap<String, Method>) -> Result<
     for (name, method) in methods {
         let service_method_call = snake_to_pascal(&format!("{}_{}Call", service, name));
         let service_method_input = service_method_input(method)?;
-        let request_setter = if !service_method_input.is_empty() {
-            "
-            request,"
-        } else {
-            ""
-        };
         let docs = if let Some(comment) = &method.description {
             as_comment("    ", comment.clone(), false)?
         } else {
             String::new()
         };
+        let set_required = service_method_set_required(method)?;
         write!(
             &mut service_method_buf,
             "
 {}    pub fn {}(&self{}) -> {} {{
-        {} {{
-            client: self.client.clone(),{}
+        let mut c = {} {{
+            client: self.client.clone(),
             ..Default::default()
-        }}
+        }};{}
+        c
     }}",
             docs,
             camel_to_snake(name),
             service_method_input,
             service_method_call,
             service_method_call,
-            request_setter
+            set_required
         )?;
     }
     Ok(service_method_buf)
@@ -547,15 +543,80 @@ fn service_methods(service: &str, methods: &BTreeMap<String, Method>) -> Result<
 
 /// Return a buffer indicating required request body for a service method call.
 fn service_method_input(method: &Method) -> Result<String> {
-    let buf = match &method.request {
-        Some(req) => format!(
+    let mut buf = String::new();
+    for param_key in &method.parameter_order {
+        let param = method
+            .parameters
+            .get(param_key)
+            .expect("must have associated parameter");
+        let (param_type, _) = setter_type(
+            param
+                .schema
+                .schema_type
+                .as_deref()
+                .ok_or_else(|| anyhow!("missing schema_type for schema: {:?}", param.schema))?,
+            param.repeated.unwrap_or(false),
+        );
+        write!(&mut buf, ", {}: {}", camel_to_snake(param_key), param_type)?;
+    }
+    if let Some(req) = &method.request {
+        write!(
+            &mut buf,
             ", request: model::{}",
             req.schema_ref
                 .as_ref()
                 .ok_or_else(|| anyhow!("no schema_ref found for request: {:?}", req))?
-        ),
-        None => String::new(),
-    };
+        )?;
+    }
+    Ok(buf)
+}
+
+/// Return a buffer indicating required request body for a service method call.
+fn service_method_set_required(method: &Method) -> Result<String> {
+    let mut buf = String::new();
+    for param_key in &method.parameter_order {
+        let param = method.parameters.get(param_key).unwrap();
+        let into_buf = if param.schema.schema_type.as_deref().unwrap() == "string"
+            && param.repeated.unwrap_or(false) == false
+        {
+            ".into()"
+        } else {
+            ""
+        };
+
+        if param.location == "path" {
+            write!(
+                &mut buf,
+                "
+                c.{} = Some({}{});",
+                camel_to_snake(param_key),
+                camel_to_snake(param_key),
+                into_buf
+            )?;
+        } else if !into_buf.is_empty() {
+            // query location
+            write!(
+                &mut buf,
+                "
+                c.url_params.insert(\"{}\".into(), vec![{}{}]);",
+                param_key,
+                camel_to_snake(param_key),
+                into_buf
+            )?;
+        } else {
+            // query location, repeated
+            write!(
+                &mut buf,
+                "
+                c.url_params.insert(\"{}\".into(), {});",
+                param_key,
+                camel_to_snake(param_key)
+            )?;
+        }
+    }
+    if let Some(_) = &method.request {
+        write!(&mut buf, "c.request = request;")?;
+    }
     Ok(buf)
 }
 
@@ -726,12 +787,17 @@ fn call_params(method: &Method) -> Result<String> {
 fn call_param_setters(parameters: &BTreeMap<String, Parameter>) -> Result<String> {
     let mut buf = String::new();
     for (name, details) in parameters {
+        if details.required.unwrap_or(false) {
+            // These will have already been set, no need for setters
+            continue;
+        }
         let name = camel_to_snake(name);
         let (in_type, into) =
             setter_type(
                 details.schema.schema_type.as_deref().ok_or_else(|| {
                     anyhow!("missing schema_type for schema: {:?}", details.schema)
                 })?,
+                details.repeated.unwrap_or(false),
             );
         let val = if into {
             "value.into()".to_string()
@@ -897,7 +963,11 @@ fn struct_type(schema: &Schema) -> Result<String> {
 
 /// Returns a Rust type and wether that type needs to be transformed with `into()`
 /// given a simple discovery document schema type.
-fn setter_type(param_type: &str) -> (String, bool) {
+fn setter_type(param_type: &str, repeated: bool) -> (String, bool) {
+    if repeated {
+        // repeated values are only ever strings
+        return ("Vec<String>".into(), false);
+    }
     match param_type {
         "string" => ("impl Into<String>".into(), true),
         "integer" => ("i64".into(), false),
