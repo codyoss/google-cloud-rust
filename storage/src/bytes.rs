@@ -28,18 +28,10 @@ impl BytesReader {
     pub async fn read_all(self) -> Result<Bytes> {
         let bytes = match self.inner {
             Inner::File(file_reader) => {
-                let mut file = File::open(&file_reader.path)
-                    .await
-                    .map_err(Error::wrap)?;
-                let len = file
-                    .metadata()
-                    .await
-                    .map_err(Error::wrap)?
-                    .len();
+                let mut file = File::open(&file_reader.path).await.map_err(Error::wrap)?;
+                let len = file.metadata().await.map_err(Error::wrap)?.len();
                 let mut buf = BytesMut::with_capacity(len as usize);
-                file.read_buf(&mut buf)
-                    .await
-                    .map_err(Error::wrap)?;
+                file.read_buf(&mut buf).await.map_err(Error::wrap)?;
                 buf.freeze()
             }
             Inner::Byte(byte_reader) => byte_reader.bytes,
@@ -142,9 +134,7 @@ struct FileReader {
 impl FileReader {
     async fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if self.file.is_none() {
-            let file_handle = File::open(&self.path)
-                .await
-                .map_err(Error::wrap)?;
+            let file_handle = File::open(&self.path).await.map_err(Error::wrap)?;
             self.file = Some(file_handle);
         }
         let n = self
@@ -188,24 +178,17 @@ impl ResponseReader {
 
         if let Some(bytes) = &mut self.extra {
             if bytes.len() <= buf.len() {
-                let n = std::io::Read::read(&mut bytes.reader(), buf)
-                    .map_err(Error::wrap)?;
+                let n = std::io::Read::read(&mut bytes.reader(), buf).map_err(Error::wrap)?;
                 bytes_read_to_buf = n;
                 self.extra = None;
             } else {
                 let cur_chunk = bytes.split_to(buf.len());
-                let n = std::io::Read::read(&mut cur_chunk.reader(), buf)
-                    .map_err(Error::wrap)?;
+                let n = std::io::Read::read(&mut cur_chunk.reader(), buf).map_err(Error::wrap)?;
                 return Ok(n);
             }
         }
 
-        while let Some(mut chunk) = self
-            .response
-            .chunk()
-            .await
-            .map_err(Error::wrap)?
-        {
+        while let Some(mut chunk) = self.response.chunk().await.map_err(Error::wrap)? {
             if (chunk.len() + bytes_read_to_buf) <= buf.len() {
                 let n = std::io::Read::read(&mut chunk.reader(), &mut buf[bytes_read_to_buf..])
                     .map_err(Error::wrap)?;

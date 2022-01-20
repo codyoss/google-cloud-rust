@@ -775,9 +775,9 @@ fn builder_impl(fields: &[StructField], base_struct: &str) -> Result<String> {
                 &mut buf,
                 "
 {}    pub fn {}(mut self, value: impl Into<{}>) -> Self {{
-    self.{} = Some(value.into());
-    self
-}}",
+        self.{} = Some(value.into());
+        self
+    }}",
                 doc,
                 safe_method_name(&field.name),
                 &field.field_type,
@@ -788,9 +788,9 @@ fn builder_impl(fields: &[StructField], base_struct: &str) -> Result<String> {
                 &mut buf,
                 "
 {}    pub fn {}(mut self, value: {}) -> Self {{
-    self.{} = Some(value);
-    self
-}}",
+        self.{} = Some(value);
+        self
+    }}",
                 doc,
                 safe_method_name(&field.name),
                 &field.field_type,
@@ -1044,26 +1044,28 @@ fn media_upload_method(
         &mut buf,
         "
 
-    pub async fn upload(mut self, media: BytesReader, media_mime_type: impl Into<std::string::String>) -> Result<{}> {{
+    pub async fn upload(
+        mut self, 
+        media: impl Into<BytesReader>,
+        media_mime_type: impl Into<std::string::String>
+    ) -> Result<{}> {{
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let body = serde_json::to_vec(&self.request).map_err(Error::wrap)?;
         let form = reqwest::multipart::Form::new()
             .part(
                 \"body\",
-                reqwest::multipart::Part::bytes(body).mime_str(\"application/json\").map_err(Error::wrap)?,
+                reqwest::multipart::Part::bytes(body)
+                .mime_str(\"application/json\")
+                .map_err(Error::wrap)?,
             )
             .part(
                 \"media\",
-                reqwest::multipart::Part::bytes(media.read_all().await?.as_ref().to_owned())
-                    .mime_str(media_mime_type.into().as_str()).map_err(Error::wrap)?,
+                reqwest::multipart::Part::bytes(media.into().read_all().await?.as_ref().to_owned())
+                    .mime_str(media_mime_type.into().as_str())
+                    .map_err(Error::wrap)?,
             );
-        self
-            .url_params
+        self.url_params
             .insert(\"uploadType\".into(), vec![\"multipart\".into()]);
 
         let res = client

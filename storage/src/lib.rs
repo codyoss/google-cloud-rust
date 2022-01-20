@@ -13,7 +13,13 @@ const BASE_PATH: &str = "https:/storage.googleapis.com/storage/v1/";
 const MTLS_BASE_PATH: &str = "https:/storage.mtls.googleapis.com/storage/v1/";
 
 fn default_scopes() -> Vec<String> {
-    vec!["https://www.googleapis.com/auth/cloud-platform".to_string(),"https://www.googleapis.com/auth/cloud-platform.read-only".to_string(),"https://www.googleapis.com/auth/devstorage.full_control".to_string(),"https://www.googleapis.com/auth/devstorage.read_only".to_string(),"https://www.googleapis.com/auth/devstorage.read_write".to_string()]
+    vec![
+        "https://www.googleapis.com/auth/cloud-platform".to_string(),
+        "https://www.googleapis.com/auth/cloud-platform.read-only".to_string(),
+        "https://www.googleapis.com/auth/devstorage.full_control".to_string(),
+        "https://www.googleapis.com/auth/devstorage.read_only".to_string(),
+        "https://www.googleapis.com/auth/devstorage.read_write".to_string(),
+    ]
 }
 
 #[derive(Clone, Debug)]
@@ -29,7 +35,10 @@ struct ClientRef {
 
 impl std::fmt::Debug for ClientRef {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ClientRef").field("http_client", &self.http_client).field("base_path", &self.base_path).finish()
+        f.debug_struct("ClientRef")
+            .field("http_client", &self.http_client)
+            .field("base_path", &self.base_path)
+            .finish()
     }
 }
 
@@ -37,7 +46,10 @@ impl Default for ClientRef {
     fn default() -> Self {
         let mut headers = http::HeaderMap::with_capacity(1);
         headers.insert("User-Agent", "gcloud-rust/0.1".parse().unwrap());
-        let client = reqwest::Client::builder().default_headers(headers).build().unwrap();
+        let client = reqwest::Client::builder()
+            .default_headers(headers)
+            .build()
+            .unwrap();
         Self {
             http_client: client,
             base_path: BASE_PATH.into(),
@@ -52,12 +64,13 @@ impl Client {
             .scopes(default_scopes())
             .build()
             .map_err(Error::wrap)?;
-        let cred = Credential::find_default(cc)
-            .await
-            .map_err(Error::wrap)?;
+        let cred = Credential::find_default(cc).await.map_err(Error::wrap)?;
         let mut headers = http::HeaderMap::with_capacity(1);
         headers.insert("User-Agent", "gcloud-rust/0.1".parse().unwrap());
-        let client = reqwest::Client::builder().default_headers(headers).build().unwrap();
+        let client = reqwest::Client::builder()
+            .default_headers(headers)
+            .build()
+            .unwrap();
         let inner = ClientRef {
             base_path: BASE_PATH.into(),
             http_client: client,
@@ -240,28 +253,36 @@ impl BucketAccessControlsDeleteCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<()> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .delete(format!("{}b/{}/acl/{}", client.base_path,self.bucket.unwrap(),self.entity.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .delete(format!(
+                "{}b/{}/acl/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.entity.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -272,7 +293,7 @@ impl BucketAccessControlsDeleteCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            Ok(())
+        Ok(())
     }
 }
 
@@ -300,28 +321,36 @@ impl BucketAccessControlsGetCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::BucketAccessControl> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}b/{}/acl/{}", client.base_path,self.bucket.unwrap(),self.entity.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}b/{}/acl/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.entity.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -332,8 +361,8 @@ impl BucketAccessControlsGetCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::BucketAccessControl = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::BucketAccessControl = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -354,28 +383,35 @@ impl BucketAccessControlsInsertCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::BucketAccessControl> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .post(format!("{}b/{}/acl", client.base_path,self.bucket.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .post(format!(
+                "{}b/{}/acl",
+                client.base_path,
+                self.bucket.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -387,8 +423,8 @@ impl BucketAccessControlsInsertCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::BucketAccessControl = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::BucketAccessControl = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -408,28 +444,35 @@ impl BucketAccessControlsListCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::BucketAccessControls> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}b/{}/acl", client.base_path,self.bucket.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}b/{}/acl",
+                client.base_path,
+                self.bucket.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -440,8 +483,8 @@ impl BucketAccessControlsListCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::BucketAccessControls = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::BucketAccessControls = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -470,28 +513,36 @@ impl BucketAccessControlsPatchCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::BucketAccessControl> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .patch(format!("{}b/{}/acl/{}", client.base_path,self.bucket.unwrap(),self.entity.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .patch(format!(
+                "{}b/{}/acl/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.entity.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -503,8 +554,8 @@ impl BucketAccessControlsPatchCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::BucketAccessControl = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::BucketAccessControl = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -533,28 +584,36 @@ impl BucketAccessControlsUpdateCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::BucketAccessControl> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .put(format!("{}b/{}/acl/{}", client.base_path,self.bucket.unwrap(),self.entity.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .put(format!(
+                "{}b/{}/acl/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.entity.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -566,11 +625,10 @@ impl BucketAccessControlsUpdateCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::BucketAccessControl = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::BucketAccessControl = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
-
 
 impl BucketsService {
     /// Permanently deletes an empty bucket.
@@ -667,40 +725,45 @@ impl BucketsDeleteCall {
     /// If set, only deletes the bucket if its metageneration matches this
     /// value.
     pub fn if_metageneration_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_match".into(), vec![value.into()]);
         self
     }
     /// If set, only deletes the bucket if its metageneration does not match
     /// this value.
     pub fn if_metageneration_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_not_match".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<()> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .delete(format!("{}b/{}", client.base_path,self.bucket.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .delete(format!("{}b/{}", client.base_path, self.bucket.unwrap()))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -711,7 +774,7 @@ impl BucketsDeleteCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            Ok(())
+        Ok(())
     }
 }
 
@@ -731,45 +794,51 @@ impl BucketsGetCall {
     /// Makes the return of the bucket metadata conditional on whether the
     /// bucket's current metageneration matches the given value.
     pub fn if_metageneration_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_match".into(), vec![value.into()]);
         self
     }
     /// Makes the return of the bucket metadata conditional on whether the
     /// bucket's current metageneration does not match the given value.
     pub fn if_metageneration_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_not_match".into(), vec![value.into()]);
         self
     }
     /// Set of properties to return. Defaults to noAcl.
     pub fn projection(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("projection".into(), vec![value.into()]);
+        self.url_params
+            .insert("projection".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Bucket> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}b/{}", client.base_path,self.bucket.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!("{}b/{}", client.base_path, self.bucket.unwrap()))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -780,8 +849,8 @@ impl BucketsGetCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Bucket = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Bucket = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -802,34 +871,44 @@ impl BucketsGetIamPolicyCall {
     /// optionsRequestedPolicyVersion is for an older version that doesn't
     /// support part of the requested IAM policy, the request fails.
     pub fn options_requested_policy_version(mut self, value: i64) -> Self {
-        self.url_params.insert("options_requested_policy_version".into(), vec![value.to_string()]);
+        self.url_params.insert(
+            "options_requested_policy_version".into(),
+            vec![value.to_string()],
+        );
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Policy> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}b/{}/iam", client.base_path,self.bucket.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}b/{}/iam",
+                client.base_path,
+                self.bucket.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -840,8 +919,8 @@ impl BucketsGetIamPolicyCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Policy = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Policy = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -855,13 +934,15 @@ pub struct BucketsInsertCall {
 impl BucketsInsertCall {
     /// Apply a predefined set of access controls to this bucket.
     pub fn predefined_acl(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("predefined_acl".into(), vec![value.into()]);
+        self.url_params
+            .insert("predefined_acl".into(), vec![value.into()]);
         self
     }
     /// Apply a predefined set of default object access controls to this
     /// bucket.
     pub fn predefined_default_object_acl(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("predefined_default_object_acl".into(), vec![value.into()]);
+        self.url_params
+            .insert("predefined_default_object_acl".into(), vec![value.into()]);
         self
     }
     /// A valid API project identifier.
@@ -873,33 +954,37 @@ impl BucketsInsertCall {
     /// resource specifies acl or defaultObjectAcl properties, when it
     /// defaults to full.
     pub fn projection(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("projection".into(), vec![value.into()]);
+        self.url_params
+            .insert("projection".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Bucket> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
             .post(format!("{}b", client.base_path))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -911,8 +996,8 @@ impl BucketsInsertCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Bucket = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Bucket = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -926,13 +1011,15 @@ impl BucketsListCall {
     /// Maximum number of buckets to return in a single response. The service
     /// will use this parameter or 1,000 items, whichever is smaller.
     pub fn max_results(mut self, value: i64) -> Self {
-        self.url_params.insert("max_results".into(), vec![value.to_string()]);
+        self.url_params
+            .insert("max_results".into(), vec![value.to_string()]);
         self
     }
     /// A previously-returned page token representing part of the larger set
     /// of results to view.
     pub fn page_token(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("page_token".into(), vec![value.into()]);
+        self.url_params
+            .insert("page_token".into(), vec![value.into()]);
         self
     }
     /// Filter results to buckets whose names begin with this prefix.
@@ -947,33 +1034,37 @@ impl BucketsListCall {
     }
     /// Set of properties to return. Defaults to noAcl.
     pub fn projection(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("projection".into(), vec![value.into()]);
+        self.url_params
+            .insert("projection".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Buckets> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
             .get(format!("{}b", client.base_path))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -984,8 +1075,8 @@ impl BucketsListCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Buckets = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Buckets = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -1005,34 +1096,42 @@ impl BucketsLockRetentionPolicyCall {
     /// Makes the operation conditional on whether bucket's current
     /// metageneration matches the given value.
     pub fn if_metageneration_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_match".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Bucket> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .post(format!("{}b/{}/lockRetentionPolicy", client.base_path,self.bucket.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .post(format!(
+                "{}b/{}/lockRetentionPolicy",
+                client.base_path,
+                self.bucket.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -1043,8 +1142,8 @@ impl BucketsLockRetentionPolicyCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Bucket = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Bucket = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -1065,56 +1164,64 @@ impl BucketsPatchCall {
     /// Makes the return of the bucket metadata conditional on whether the
     /// bucket's current metageneration matches the given value.
     pub fn if_metageneration_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_match".into(), vec![value.into()]);
         self
     }
     /// Makes the return of the bucket metadata conditional on whether the
     /// bucket's current metageneration does not match the given value.
     pub fn if_metageneration_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_not_match".into(), vec![value.into()]);
         self
     }
     /// Apply a predefined set of access controls to this bucket.
     pub fn predefined_acl(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("predefined_acl".into(), vec![value.into()]);
+        self.url_params
+            .insert("predefined_acl".into(), vec![value.into()]);
         self
     }
     /// Apply a predefined set of default object access controls to this
     /// bucket.
     pub fn predefined_default_object_acl(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("predefined_default_object_acl".into(), vec![value.into()]);
+        self.url_params
+            .insert("predefined_default_object_acl".into(), vec![value.into()]);
         self
     }
     /// Set of properties to return. Defaults to full.
     pub fn projection(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("projection".into(), vec![value.into()]);
+        self.url_params
+            .insert("projection".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Bucket> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .patch(format!("{}b/{}", client.base_path,self.bucket.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .patch(format!("{}b/{}", client.base_path, self.bucket.unwrap()))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -1126,8 +1233,8 @@ impl BucketsPatchCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Bucket = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Bucket = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -1148,28 +1255,35 @@ impl BucketsSetIamPolicyCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Policy> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .put(format!("{}b/{}/iam", client.base_path,self.bucket.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .put(format!(
+                "{}b/{}/iam",
+                client.base_path,
+                self.bucket.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -1181,8 +1295,8 @@ impl BucketsSetIamPolicyCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Policy = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Policy = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -1201,34 +1315,42 @@ impl BucketsTestIamPermissionsCall {
     }
     /// Permissions to test.
     pub fn permissions(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("permissions".into(), vec![value.into()]);
+        self.url_params
+            .insert("permissions".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::TestIamPermissionsResponse> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}b/{}/iam/testPermissions", client.base_path,self.bucket.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}b/{}/iam/testPermissions",
+                client.base_path,
+                self.bucket.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -1239,8 +1361,8 @@ impl BucketsTestIamPermissionsCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::TestIamPermissionsResponse = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::TestIamPermissionsResponse = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -1261,56 +1383,64 @@ impl BucketsUpdateCall {
     /// Makes the return of the bucket metadata conditional on whether the
     /// bucket's current metageneration matches the given value.
     pub fn if_metageneration_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_match".into(), vec![value.into()]);
         self
     }
     /// Makes the return of the bucket metadata conditional on whether the
     /// bucket's current metageneration does not match the given value.
     pub fn if_metageneration_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_not_match".into(), vec![value.into()]);
         self
     }
     /// Apply a predefined set of access controls to this bucket.
     pub fn predefined_acl(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("predefined_acl".into(), vec![value.into()]);
+        self.url_params
+            .insert("predefined_acl".into(), vec![value.into()]);
         self
     }
     /// Apply a predefined set of default object access controls to this
     /// bucket.
     pub fn predefined_default_object_acl(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("predefined_default_object_acl".into(), vec![value.into()]);
+        self.url_params
+            .insert("predefined_default_object_acl".into(), vec![value.into()]);
         self
     }
     /// Set of properties to return. Defaults to full.
     pub fn projection(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("projection".into(), vec![value.into()]);
+        self.url_params
+            .insert("projection".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Bucket> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .put(format!("{}b/{}", client.base_path,self.bucket.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .put(format!("{}b/{}", client.base_path, self.bucket.unwrap()))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -1322,11 +1452,10 @@ impl BucketsUpdateCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Bucket = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Bucket = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
-
 
 impl ChannelsService {
     /// Stop watching resources through this channel
@@ -1345,15 +1474,9 @@ pub struct ChannelsStopCall {
 }
 
 impl ChannelsStopCall {
-
-
     pub async fn execute(self) -> Result<()> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
             .post(format!("{}channels/stop", client.base_path))
@@ -1368,10 +1491,9 @@ impl ChannelsStopCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            Ok(())
+        Ok(())
     }
 }
-
 
 impl DefaultObjectAccessControlsService {
     /// Permanently deletes the default object ACL entry for the specified
@@ -1391,7 +1513,10 @@ impl DefaultObjectAccessControlsService {
         }
     }
     /// Creates a new default object ACL entry on the specified bucket.
-    pub fn insert(&self, request: model::ObjectAccessControl) -> DefaultObjectAccessControlsInsertCall {
+    pub fn insert(
+        &self,
+        request: model::ObjectAccessControl,
+    ) -> DefaultObjectAccessControlsInsertCall {
         DefaultObjectAccessControlsInsertCall {
             client: self.client.clone(),
             request,
@@ -1406,7 +1531,10 @@ impl DefaultObjectAccessControlsService {
         }
     }
     /// Patches a default object ACL entry on the specified bucket.
-    pub fn patch(&self, request: model::ObjectAccessControl) -> DefaultObjectAccessControlsPatchCall {
+    pub fn patch(
+        &self,
+        request: model::ObjectAccessControl,
+    ) -> DefaultObjectAccessControlsPatchCall {
         DefaultObjectAccessControlsPatchCall {
             client: self.client.clone(),
             request,
@@ -1414,7 +1542,10 @@ impl DefaultObjectAccessControlsService {
         }
     }
     /// Updates a default object ACL entry on the specified bucket.
-    pub fn update(&self, request: model::ObjectAccessControl) -> DefaultObjectAccessControlsUpdateCall {
+    pub fn update(
+        &self,
+        request: model::ObjectAccessControl,
+    ) -> DefaultObjectAccessControlsUpdateCall {
         DefaultObjectAccessControlsUpdateCall {
             client: self.client.clone(),
             request,
@@ -1446,28 +1577,36 @@ impl DefaultObjectAccessControlsDeleteCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<()> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .delete(format!("{}b/{}/defaultObjectAcl/{}", client.base_path,self.bucket.unwrap(),self.entity.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .delete(format!(
+                "{}b/{}/defaultObjectAcl/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.entity.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -1478,7 +1617,7 @@ impl DefaultObjectAccessControlsDeleteCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            Ok(())
+        Ok(())
     }
 }
 
@@ -1506,28 +1645,36 @@ impl DefaultObjectAccessControlsGetCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::ObjectAccessControl> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}b/{}/defaultObjectAcl/{}", client.base_path,self.bucket.unwrap(),self.entity.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}b/{}/defaultObjectAcl/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.entity.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -1538,8 +1685,8 @@ impl DefaultObjectAccessControlsGetCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::ObjectAccessControl = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::ObjectAccessControl = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -1560,28 +1707,35 @@ impl DefaultObjectAccessControlsInsertCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::ObjectAccessControl> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .post(format!("{}b/{}/defaultObjectAcl", client.base_path,self.bucket.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .post(format!(
+                "{}b/{}/defaultObjectAcl",
+                client.base_path,
+                self.bucket.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -1593,8 +1747,8 @@ impl DefaultObjectAccessControlsInsertCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::ObjectAccessControl = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::ObjectAccessControl = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -1614,40 +1768,49 @@ impl DefaultObjectAccessControlsListCall {
     /// If present, only return default ACL listing if the bucket's current
     /// metageneration matches this value.
     pub fn if_metageneration_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_match".into(), vec![value.into()]);
         self
     }
     /// If present, only return default ACL listing if the bucket's current
     /// metageneration does not match the given value.
     pub fn if_metageneration_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_not_match".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::ObjectAccessControls> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}b/{}/defaultObjectAcl", client.base_path,self.bucket.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}b/{}/defaultObjectAcl",
+                client.base_path,
+                self.bucket.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -1658,8 +1821,8 @@ impl DefaultObjectAccessControlsListCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::ObjectAccessControls = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::ObjectAccessControls = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -1688,28 +1851,36 @@ impl DefaultObjectAccessControlsPatchCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::ObjectAccessControl> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .patch(format!("{}b/{}/defaultObjectAcl/{}", client.base_path,self.bucket.unwrap(),self.entity.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .patch(format!(
+                "{}b/{}/defaultObjectAcl/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.entity.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -1721,8 +1892,8 @@ impl DefaultObjectAccessControlsPatchCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::ObjectAccessControl = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::ObjectAccessControl = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -1751,28 +1922,36 @@ impl DefaultObjectAccessControlsUpdateCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::ObjectAccessControl> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .put(format!("{}b/{}/defaultObjectAcl/{}", client.base_path,self.bucket.unwrap(),self.entity.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .put(format!(
+                "{}b/{}/defaultObjectAcl/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.entity.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -1784,11 +1963,10 @@ impl DefaultObjectAccessControlsUpdateCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::ObjectAccessControl = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::ObjectAccessControl = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
-
 
 impl NotificationsService {
     /// Permanently deletes a notification subscription.
@@ -1843,28 +2021,36 @@ impl NotificationsDeleteCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<()> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .delete(format!("{}b/{}/notificationConfigs/{}", client.base_path,self.bucket.unwrap(),self.notification.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .delete(format!(
+                "{}b/{}/notificationConfigs/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.notification.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -1875,7 +2061,7 @@ impl NotificationsDeleteCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            Ok(())
+        Ok(())
     }
 }
 
@@ -1901,28 +2087,36 @@ impl NotificationsGetCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Notification> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}b/{}/notificationConfigs/{}", client.base_path,self.bucket.unwrap(),self.notification.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}b/{}/notificationConfigs/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.notification.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -1933,8 +2127,8 @@ impl NotificationsGetCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Notification = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Notification = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -1955,28 +2149,35 @@ impl NotificationsInsertCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Notification> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .post(format!("{}b/{}/notificationConfigs", client.base_path,self.bucket.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .post(format!(
+                "{}b/{}/notificationConfigs",
+                client.base_path,
+                self.bucket.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -1988,8 +2189,8 @@ impl NotificationsInsertCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Notification = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Notification = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -2009,28 +2210,35 @@ impl NotificationsListCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Notifications> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}b/{}/notificationConfigs", client.base_path,self.bucket.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}b/{}/notificationConfigs",
+                client.base_path,
+                self.bucket.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -2041,11 +2249,10 @@ impl NotificationsListCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Notifications = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Notifications = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
-
 
 impl ObjectAccessControlsService {
     /// Permanently deletes the ACL entry for the specified entity on the
@@ -2121,7 +2328,8 @@ impl ObjectAccessControlsDeleteCall {
     /// If present, selects a specific revision of this object (as opposed to
     /// the latest version, the default).
     pub fn generation(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("generation".into(), vec![value.into()]);
+        self.url_params
+            .insert("generation".into(), vec![value.into()]);
         self
     }
     /// Name of the object. For information about how to URL encode object
@@ -2133,28 +2341,37 @@ impl ObjectAccessControlsDeleteCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<()> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .delete(format!("{}b/{}/o/{}/acl/{}", client.base_path,self.bucket.unwrap(),self.object.unwrap(),self.entity.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .delete(format!(
+                "{}b/{}/o/{}/acl/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.object.unwrap(),
+                self.entity.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -2165,7 +2382,7 @@ impl ObjectAccessControlsDeleteCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            Ok(())
+        Ok(())
     }
 }
 
@@ -2194,7 +2411,8 @@ impl ObjectAccessControlsGetCall {
     /// If present, selects a specific revision of this object (as opposed to
     /// the latest version, the default).
     pub fn generation(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("generation".into(), vec![value.into()]);
+        self.url_params
+            .insert("generation".into(), vec![value.into()]);
         self
     }
     /// Name of the object. For information about how to URL encode object
@@ -2206,28 +2424,37 @@ impl ObjectAccessControlsGetCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::ObjectAccessControl> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}b/{}/o/{}/acl/{}", client.base_path,self.bucket.unwrap(),self.object.unwrap(),self.entity.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}b/{}/o/{}/acl/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.object.unwrap(),
+                self.entity.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -2238,8 +2465,8 @@ impl ObjectAccessControlsGetCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::ObjectAccessControl = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::ObjectAccessControl = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -2261,7 +2488,8 @@ impl ObjectAccessControlsInsertCall {
     /// If present, selects a specific revision of this object (as opposed to
     /// the latest version, the default).
     pub fn generation(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("generation".into(), vec![value.into()]);
+        self.url_params
+            .insert("generation".into(), vec![value.into()]);
         self
     }
     /// Name of the object. For information about how to URL encode object
@@ -2273,28 +2501,36 @@ impl ObjectAccessControlsInsertCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::ObjectAccessControl> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .post(format!("{}b/{}/o/{}/acl", client.base_path,self.bucket.unwrap(),self.object.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .post(format!(
+                "{}b/{}/o/{}/acl",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.object.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -2306,8 +2542,8 @@ impl ObjectAccessControlsInsertCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::ObjectAccessControl = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::ObjectAccessControl = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -2328,7 +2564,8 @@ impl ObjectAccessControlsListCall {
     /// If present, selects a specific revision of this object (as opposed to
     /// the latest version, the default).
     pub fn generation(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("generation".into(), vec![value.into()]);
+        self.url_params
+            .insert("generation".into(), vec![value.into()]);
         self
     }
     /// Name of the object. For information about how to URL encode object
@@ -2340,28 +2577,36 @@ impl ObjectAccessControlsListCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::ObjectAccessControls> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}b/{}/o/{}/acl", client.base_path,self.bucket.unwrap(),self.object.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}b/{}/o/{}/acl",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.object.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -2372,8 +2617,8 @@ impl ObjectAccessControlsListCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::ObjectAccessControls = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::ObjectAccessControls = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -2403,7 +2648,8 @@ impl ObjectAccessControlsPatchCall {
     /// If present, selects a specific revision of this object (as opposed to
     /// the latest version, the default).
     pub fn generation(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("generation".into(), vec![value.into()]);
+        self.url_params
+            .insert("generation".into(), vec![value.into()]);
         self
     }
     /// Name of the object. For information about how to URL encode object
@@ -2415,28 +2661,37 @@ impl ObjectAccessControlsPatchCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::ObjectAccessControl> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .patch(format!("{}b/{}/o/{}/acl/{}", client.base_path,self.bucket.unwrap(),self.object.unwrap(),self.entity.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .patch(format!(
+                "{}b/{}/o/{}/acl/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.object.unwrap(),
+                self.entity.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -2448,8 +2703,8 @@ impl ObjectAccessControlsPatchCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::ObjectAccessControl = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::ObjectAccessControl = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -2479,7 +2734,8 @@ impl ObjectAccessControlsUpdateCall {
     /// If present, selects a specific revision of this object (as opposed to
     /// the latest version, the default).
     pub fn generation(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("generation".into(), vec![value.into()]);
+        self.url_params
+            .insert("generation".into(), vec![value.into()]);
         self
     }
     /// Name of the object. For information about how to URL encode object
@@ -2491,28 +2747,37 @@ impl ObjectAccessControlsUpdateCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::ObjectAccessControl> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .put(format!("{}b/{}/o/{}/acl/{}", client.base_path,self.bucket.unwrap(),self.object.unwrap(),self.entity.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .put(format!(
+                "{}b/{}/o/{}/acl/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.object.unwrap(),
+                self.entity.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -2524,11 +2789,10 @@ impl ObjectAccessControlsUpdateCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::ObjectAccessControl = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::ObjectAccessControl = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
-
 
 impl ObjectsService {
     /// Concatenates a list of existing objects into a new object in the same
@@ -2661,20 +2925,23 @@ impl ObjectsComposeCall {
     }
     /// Apply a predefined set of access controls to the destination object.
     pub fn destination_predefined_acl(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("destination_predefined_acl".into(), vec![value.into()]);
+        self.url_params
+            .insert("destination_predefined_acl".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// generation matches the given value. Setting to 0 makes the operation
     /// succeed only if there are no live versions of the object.
     pub fn if_generation_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_generation_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_generation_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// metageneration matches the given value.
     pub fn if_metageneration_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_match".into(), vec![value.into()]);
         self
     }
     /// Resource name of the Cloud KMS key, of the form
@@ -2682,34 +2949,43 @@ impl ObjectsComposeCall {
     ///  that will be used to encrypt the object. Overrides the object
     /// metadata's kms_key_name value, if any.
     pub fn kms_key_name(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("kms_key_name".into(), vec![value.into()]);
+        self.url_params
+            .insert("kms_key_name".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Object> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .post(format!("{}b/{}/o/{}/compose", client.base_path,self.destination_bucket.unwrap(),self.destination_object.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .post(format!(
+                "{}b/{}/o/{}/compose",
+                client.base_path,
+                self.destination_bucket.unwrap(),
+                self.destination_object.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -2721,8 +2997,8 @@ impl ObjectsComposeCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Object = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Object = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -2751,7 +3027,8 @@ impl ObjectsCopyCall {
     ///  that will be used to encrypt the object. Overrides the object
     /// metadata's kms_key_name value, if any.
     pub fn destination_kms_key_name(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("destination_kms_key_name".into(), vec![value.into()]);
+        self.url_params
+            .insert("destination_kms_key_name".into(), vec![value.into()]);
         self
     }
     /// Name of the new object. Required when the object metadata is not
@@ -2763,14 +3040,16 @@ impl ObjectsCopyCall {
     }
     /// Apply a predefined set of access controls to the destination object.
     pub fn destination_predefined_acl(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("destination_predefined_acl".into(), vec![value.into()]);
+        self.url_params
+            .insert("destination_predefined_acl".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the destination object's
     /// current generation matches the given value. Setting to 0 makes the
     /// operation succeed only if there are no live versions of the object.
     pub fn if_generation_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_generation_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_generation_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the destination object's
@@ -2778,55 +3057,66 @@ impl ObjectsCopyCall {
     /// exists, the precondition fails. Setting to 0 makes the operation
     /// succeed only if there is a live version of the object.
     pub fn if_generation_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_generation_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_generation_not_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the destination object's
     /// current metageneration matches the given value.
     pub fn if_metageneration_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the destination object's
     /// current metageneration does not match the given value.
     pub fn if_metageneration_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_not_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the source object's
     /// current generation matches the given value.
     pub fn if_source_generation_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_source_generation_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_source_generation_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the source object's
     /// current generation does not match the given value.
     pub fn if_source_generation_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_source_generation_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_source_generation_not_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the source object's
     /// current metageneration matches the given value.
     pub fn if_source_metageneration_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_source_metageneration_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_source_metageneration_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the source object's
     /// current metageneration does not match the given value.
     pub fn if_source_metageneration_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_source_metageneration_not_match".into(), vec![value.into()]);
+        self.url_params.insert(
+            "if_source_metageneration_not_match".into(),
+            vec![value.into()],
+        );
         self
     }
     /// Set of properties to return. Defaults to noAcl, unless the object
     /// resource specifies the acl property, when it defaults to full.
     pub fn projection(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("projection".into(), vec![value.into()]);
+        self.url_params
+            .insert("projection".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// Name of the bucket in which to find the source object.
@@ -2837,7 +3127,8 @@ impl ObjectsCopyCall {
     /// If present, selects a specific revision of the source object (as
     /// opposed to the latest version, the default).
     pub fn source_generation(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("source_generation".into(), vec![value.into()]);
+        self.url_params
+            .insert("source_generation".into(), vec![value.into()]);
         self
     }
     /// Name of the source object. For information about how to URL encode
@@ -2849,22 +3140,31 @@ impl ObjectsCopyCall {
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Object> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .post(format!("{}b/{}/o/{}/copyTo/b/{}/o/{}", client.base_path,self.source_bucket.unwrap(),self.source_object.unwrap(),self.destination_bucket.unwrap(),self.destination_object.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .post(format!(
+                "{}b/{}/o/{}/copyTo/b/{}/o/{}",
+                client.base_path,
+                self.source_bucket.unwrap(),
+                self.source_object.unwrap(),
+                self.destination_bucket.unwrap(),
+                self.destination_object.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -2876,8 +3176,8 @@ impl ObjectsCopyCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Object = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Object = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -2898,14 +3198,16 @@ impl ObjectsDeleteCall {
     /// If present, permanently deletes a specific revision of this object
     /// (as opposed to the latest version, the default).
     pub fn generation(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("generation".into(), vec![value.into()]);
+        self.url_params
+            .insert("generation".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// generation matches the given value. Setting to 0 makes the operation
     /// succeed only if there are no live versions of the object.
     pub fn if_generation_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_generation_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_generation_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
@@ -2913,19 +3215,22 @@ impl ObjectsDeleteCall {
     /// the precondition fails. Setting to 0 makes the operation succeed only
     /// if there is a live version of the object.
     pub fn if_generation_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_generation_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_generation_not_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// metageneration matches the given value.
     pub fn if_metageneration_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// metageneration does not match the given value.
     pub fn if_metageneration_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_not_match".into(), vec![value.into()]);
         self
     }
     /// Name of the object. For information about how to URL encode object
@@ -2937,28 +3242,36 @@ impl ObjectsDeleteCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<()> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .delete(format!("{}b/{}/o/{}", client.base_path,self.bucket.unwrap(),self.object.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .delete(format!(
+                "{}b/{}/o/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.object.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -2969,7 +3282,7 @@ impl ObjectsDeleteCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            Ok(())
+        Ok(())
     }
 }
 
@@ -2990,14 +3303,16 @@ impl ObjectsGetCall {
     /// If present, selects a specific revision of this object (as opposed to
     /// the latest version, the default).
     pub fn generation(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("generation".into(), vec![value.into()]);
+        self.url_params
+            .insert("generation".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// generation matches the given value. Setting to 0 makes the operation
     /// succeed only if there are no live versions of the object.
     pub fn if_generation_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_generation_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_generation_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
@@ -3005,19 +3320,22 @@ impl ObjectsGetCall {
     /// the precondition fails. Setting to 0 makes the operation succeed only
     /// if there is a live version of the object.
     pub fn if_generation_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_generation_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_generation_not_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// metageneration matches the given value.
     pub fn if_metageneration_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// metageneration does not match the given value.
     pub fn if_metageneration_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_not_match".into(), vec![value.into()]);
         self
     }
     /// Name of the object. For information about how to URL encode object
@@ -3028,34 +3346,43 @@ impl ObjectsGetCall {
     }
     /// Set of properties to return. Defaults to noAcl.
     pub fn projection(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("projection".into(), vec![value.into()]);
+        self.url_params
+            .insert("projection".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Object> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}b/{}/o/{}", client.base_path,self.bucket.unwrap(),self.object.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}b/{}/o/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.object.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -3066,21 +3393,28 @@ impl ObjectsGetCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Object = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Object = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 
     pub async fn download(self) -> Result<Vec<u8>> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}b/{}/o/{}", client.base_path,self.bucket.unwrap(),self.object.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}b/{}/o/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.object.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "media")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -3112,7 +3446,8 @@ impl ObjectsGetIamPolicyCall {
     /// If present, selects a specific revision of this object (as opposed to
     /// the latest version, the default).
     pub fn generation(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("generation".into(), vec![value.into()]);
+        self.url_params
+            .insert("generation".into(), vec![value.into()]);
         self
     }
     /// Name of the object. For information about how to URL encode object
@@ -3124,28 +3459,36 @@ impl ObjectsGetIamPolicyCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Policy> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}b/{}/o/{}/iam", client.base_path,self.bucket.unwrap(),self.object.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}b/{}/o/{}/iam",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.object.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -3156,8 +3499,8 @@ impl ObjectsGetIamPolicyCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Policy = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Policy = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -3182,14 +3525,16 @@ impl ObjectsInsertCall {
     /// an object with uploadType=media to indicate the encoding of the
     /// content being uploaded.
     pub fn content_encoding(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("content_encoding".into(), vec![value.into()]);
+        self.url_params
+            .insert("content_encoding".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// generation matches the given value. Setting to 0 makes the operation
     /// succeed only if there are no live versions of the object.
     pub fn if_generation_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_generation_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_generation_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
@@ -3197,19 +3542,22 @@ impl ObjectsInsertCall {
     /// the precondition fails. Setting to 0 makes the operation succeed only
     /// if there is a live version of the object.
     pub fn if_generation_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_generation_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_generation_not_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// metageneration matches the given value.
     pub fn if_metageneration_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// metageneration does not match the given value.
     pub fn if_metageneration_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_not_match".into(), vec![value.into()]);
         self
     }
     /// Resource name of the Cloud KMS key, of the form
@@ -3217,7 +3565,8 @@ impl ObjectsInsertCall {
     ///  that will be used to encrypt the object. Overrides the object
     /// metadata's kms_key_name value, if any.
     pub fn kms_key_name(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("kms_key_name".into(), vec![value.into()]);
+        self.url_params
+            .insert("kms_key_name".into(), vec![value.into()]);
         self
     }
     /// Name of the object. Required when the object metadata is not
@@ -3230,55 +3579,69 @@ impl ObjectsInsertCall {
     }
     /// Apply a predefined set of access controls to this object.
     pub fn predefined_acl(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("predefined_acl".into(), vec![value.into()]);
+        self.url_params
+            .insert("predefined_acl".into(), vec![value.into()]);
         self
     }
     /// Set of properties to return. Defaults to noAcl, unless the object
     /// resource specifies the acl property, when it defaults to full.
     pub fn projection(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("projection".into(), vec![value.into()]);
+        self.url_params
+            .insert("projection".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
-    pub async fn upload(mut self, media: BytesReader, media_mime_type: impl Into<std::string::String>) -> Result<model::Object> {
+    pub async fn upload(
+        mut self,
+        media: impl Into<BytesReader>,
+        media_mime_type: impl Into<std::string::String>,
+    ) -> Result<model::Object> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let body = serde_json::to_vec(&self.request).map_err(Error::wrap)?;
         let form = reqwest::multipart::Form::new()
             .part(
                 "body",
-                reqwest::multipart::Part::bytes(body).mime_str("application/json").map_err(Error::wrap)?,
+                reqwest::multipart::Part::bytes(body)
+                    .mime_str("application/json")
+                    .map_err(Error::wrap)?,
             )
             .part(
                 "media",
-                reqwest::multipart::Part::bytes(media.read_all().await?.as_ref().to_owned())
-                    .mime_str(media_mime_type.into().as_str()).map_err(Error::wrap)?,
+                reqwest::multipart::Part::bytes(media.into().read_all().await?.as_ref().to_owned())
+                    .mime_str(media_mime_type.into().as_str())
+                    .map_err(Error::wrap)?,
             );
-        self
-            .url_params
+        self.url_params
             .insert("uploadType".into(), vec!["multipart".into()]);
 
         let res = client
             .http_client
-            .post(set_path(&client.base_path, &format!("/upload/storage/v1/b/{}/o",self.bucket.unwrap())))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .post(set_path(
+                &client.base_path,
+                &format!("/upload/storage/v1/b/{}/o", self.bucket.unwrap()),
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .multipart(form)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -3290,10 +3653,9 @@ impl ObjectsInsertCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Object = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Object = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
-    
 }
 
 #[derive(Debug, Default)]
@@ -3315,20 +3677,23 @@ impl ObjectsListCall {
     /// have their name, truncated after the delimiter, returned in prefixes.
     /// Duplicate prefixes are omitted.
     pub fn delimiter(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("delimiter".into(), vec![value.into()]);
+        self.url_params
+            .insert("delimiter".into(), vec![value.into()]);
         self
     }
     /// Filter results to objects whose names are lexicographically before
     /// endOffset. If startOffset is also set, the objects listed will have
     /// names between startOffset (inclusive) and endOffset (exclusive).
     pub fn end_offset(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("end_offset".into(), vec![value.into()]);
+        self.url_params
+            .insert("end_offset".into(), vec![value.into()]);
         self
     }
     /// If true, objects that end in exactly one instance of delimiter will
     /// have their metadata included in items in addition to prefixes.
     pub fn include_trailing_delimiter(mut self, value: bool) -> Self {
-        self.url_params.insert("include_trailing_delimiter".into(), vec![value.to_string()]);
+        self.url_params
+            .insert("include_trailing_delimiter".into(), vec![value.to_string()]);
         self
     }
     /// Maximum number of items plus prefixes to return in a single page of
@@ -3336,13 +3701,15 @@ impl ObjectsListCall {
     /// be returned than requested. The service will use this parameter or
     /// 1,000 items, whichever is smaller.
     pub fn max_results(mut self, value: i64) -> Self {
-        self.url_params.insert("max_results".into(), vec![value.to_string()]);
+        self.url_params
+            .insert("max_results".into(), vec![value.to_string()]);
         self
     }
     /// A previously-returned page token representing part of the larger set
     /// of results to view.
     pub fn page_token(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("page_token".into(), vec![value.into()]);
+        self.url_params
+            .insert("page_token".into(), vec![value.into()]);
         self
     }
     /// Filter results to objects whose names begin with this prefix.
@@ -3352,13 +3719,15 @@ impl ObjectsListCall {
     }
     /// Set of properties to return. Defaults to noAcl.
     pub fn projection(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("projection".into(), vec![value.into()]);
+        self.url_params
+            .insert("projection".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// Filter results to objects whose names are lexicographically equal to
@@ -3366,34 +3735,38 @@ impl ObjectsListCall {
     /// will have names between startOffset (inclusive) and endOffset
     /// (exclusive).
     pub fn start_offset(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("start_offset".into(), vec![value.into()]);
+        self.url_params
+            .insert("start_offset".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
     /// If true, lists all versions of an object as distinct results. The
     /// default is false. For more information, see Object Versioning.
     pub fn versions(mut self, value: bool) -> Self {
-        self.url_params.insert("versions".into(), vec![value.to_string()]);
+        self.url_params
+            .insert("versions".into(), vec![value.to_string()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Objects> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}b/{}/o", client.base_path,self.bucket.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!("{}b/{}/o", client.base_path, self.bucket.unwrap()))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -3404,8 +3777,8 @@ impl ObjectsListCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Objects = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Objects = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -3427,14 +3800,16 @@ impl ObjectsPatchCall {
     /// If present, selects a specific revision of this object (as opposed to
     /// the latest version, the default).
     pub fn generation(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("generation".into(), vec![value.into()]);
+        self.url_params
+            .insert("generation".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// generation matches the given value. Setting to 0 makes the operation
     /// succeed only if there are no live versions of the object.
     pub fn if_generation_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_generation_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_generation_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
@@ -3442,19 +3817,22 @@ impl ObjectsPatchCall {
     /// the precondition fails. Setting to 0 makes the operation succeed only
     /// if there is a live version of the object.
     pub fn if_generation_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_generation_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_generation_not_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// metageneration matches the given value.
     pub fn if_metageneration_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// metageneration does not match the given value.
     pub fn if_metageneration_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_not_match".into(), vec![value.into()]);
         self
     }
     /// Name of the object. For information about how to URL encode object
@@ -3465,39 +3843,49 @@ impl ObjectsPatchCall {
     }
     /// Apply a predefined set of access controls to this object.
     pub fn predefined_acl(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("predefined_acl".into(), vec![value.into()]);
+        self.url_params
+            .insert("predefined_acl".into(), vec![value.into()]);
         self
     }
     /// Set of properties to return. Defaults to full.
     pub fn projection(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("projection".into(), vec![value.into()]);
+        self.url_params
+            .insert("projection".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request, for Requester Pays
     /// buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Object> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .patch(format!("{}b/{}/o/{}", client.base_path,self.bucket.unwrap(),self.object.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .patch(format!(
+                "{}b/{}/o/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.object.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -3509,8 +3897,8 @@ impl ObjectsPatchCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Object = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Object = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -3537,7 +3925,8 @@ impl ObjectsRewriteCall {
     ///  that will be used to encrypt the object. Overrides the object
     /// metadata's kms_key_name value, if any.
     pub fn destination_kms_key_name(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("destination_kms_key_name".into(), vec![value.into()]);
+        self.url_params
+            .insert("destination_kms_key_name".into(), vec![value.into()]);
         self
     }
     /// Name of the new object. Required when the object metadata is not
@@ -3550,14 +3939,16 @@ impl ObjectsRewriteCall {
     }
     /// Apply a predefined set of access controls to the destination object.
     pub fn destination_predefined_acl(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("destination_predefined_acl".into(), vec![value.into()]);
+        self.url_params
+            .insert("destination_predefined_acl".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// generation matches the given value. Setting to 0 makes the operation
     /// succeed only if there are no live versions of the object.
     pub fn if_generation_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_generation_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_generation_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
@@ -3565,43 +3956,52 @@ impl ObjectsRewriteCall {
     /// the precondition fails. Setting to 0 makes the operation succeed only
     /// if there is a live version of the object.
     pub fn if_generation_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_generation_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_generation_not_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the destination object's
     /// current metageneration matches the given value.
     pub fn if_metageneration_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the destination object's
     /// current metageneration does not match the given value.
     pub fn if_metageneration_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_not_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the source object's
     /// current generation matches the given value.
     pub fn if_source_generation_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_source_generation_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_source_generation_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the source object's
     /// current generation does not match the given value.
     pub fn if_source_generation_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_source_generation_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_source_generation_not_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the source object's
     /// current metageneration matches the given value.
     pub fn if_source_metageneration_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_source_metageneration_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_source_metageneration_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the source object's
     /// current metageneration does not match the given value.
     pub fn if_source_metageneration_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_source_metageneration_not_match".into(), vec![value.into()]);
+        self.url_params.insert(
+            "if_source_metageneration_not_match".into(),
+            vec![value.into()],
+        );
         self
     }
     /// The maximum number of bytes that will be rewritten per rewrite
@@ -3612,19 +4012,22 @@ impl ObjectsRewriteCall {
     /// storage classes. Finally, this value must not change across rewrite
     /// calls else you'll get an error that the rewriteToken is invalid.
     pub fn max_bytes_rewritten_per_call(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("max_bytes_rewritten_per_call".into(), vec![value.into()]);
+        self.url_params
+            .insert("max_bytes_rewritten_per_call".into(), vec![value.into()]);
         self
     }
     /// Set of properties to return. Defaults to noAcl, unless the object
     /// resource specifies the acl property, when it defaults to full.
     pub fn projection(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("projection".into(), vec![value.into()]);
+        self.url_params
+            .insert("projection".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// Include this field (from the previous rewrite response) on each
@@ -3633,7 +4036,8 @@ impl ObjectsRewriteCall {
     /// other request fields, but if included those fields must match the
     /// values provided in the first rewrite request.
     pub fn rewrite_token(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("rewrite_token".into(), vec![value.into()]);
+        self.url_params
+            .insert("rewrite_token".into(), vec![value.into()]);
         self
     }
     /// Name of the bucket in which to find the source object.
@@ -3644,7 +4048,8 @@ impl ObjectsRewriteCall {
     /// If present, selects a specific revision of the source object (as
     /// opposed to the latest version, the default).
     pub fn source_generation(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("source_generation".into(), vec![value.into()]);
+        self.url_params
+            .insert("source_generation".into(), vec![value.into()]);
         self
     }
     /// Name of the source object. For information about how to URL encode
@@ -3656,22 +4061,31 @@ impl ObjectsRewriteCall {
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::RewriteResponse> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .post(format!("{}b/{}/o/{}/rewriteTo/b/{}/o/{}", client.base_path,self.source_bucket.unwrap(),self.source_object.unwrap(),self.destination_bucket.unwrap(),self.destination_object.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .post(format!(
+                "{}b/{}/o/{}/rewriteTo/b/{}/o/{}",
+                client.base_path,
+                self.source_bucket.unwrap(),
+                self.source_object.unwrap(),
+                self.destination_bucket.unwrap(),
+                self.destination_object.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -3683,8 +4097,8 @@ impl ObjectsRewriteCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::RewriteResponse = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::RewriteResponse = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -3706,7 +4120,8 @@ impl ObjectsSetIamPolicyCall {
     /// If present, selects a specific revision of this object (as opposed to
     /// the latest version, the default).
     pub fn generation(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("generation".into(), vec![value.into()]);
+        self.url_params
+            .insert("generation".into(), vec![value.into()]);
         self
     }
     /// Name of the object. For information about how to URL encode object
@@ -3718,28 +4133,36 @@ impl ObjectsSetIamPolicyCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Policy> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .put(format!("{}b/{}/o/{}/iam", client.base_path,self.bucket.unwrap(),self.object.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .put(format!(
+                "{}b/{}/o/{}/iam",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.object.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -3751,8 +4174,8 @@ impl ObjectsSetIamPolicyCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Policy = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Policy = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -3773,7 +4196,8 @@ impl ObjectsTestIamPermissionsCall {
     /// If present, selects a specific revision of this object (as opposed to
     /// the latest version, the default).
     pub fn generation(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("generation".into(), vec![value.into()]);
+        self.url_params
+            .insert("generation".into(), vec![value.into()]);
         self
     }
     /// Name of the object. For information about how to URL encode object
@@ -3784,34 +4208,43 @@ impl ObjectsTestIamPermissionsCall {
     }
     /// Permissions to test.
     pub fn permissions(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("permissions".into(), vec![value.into()]);
+        self.url_params
+            .insert("permissions".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::TestIamPermissionsResponse> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}b/{}/o/{}/iam/testPermissions", client.base_path,self.bucket.unwrap(),self.object.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}b/{}/o/{}/iam/testPermissions",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.object.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -3822,8 +4255,8 @@ impl ObjectsTestIamPermissionsCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::TestIamPermissionsResponse = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::TestIamPermissionsResponse = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -3845,14 +4278,16 @@ impl ObjectsUpdateCall {
     /// If present, selects a specific revision of this object (as opposed to
     /// the latest version, the default).
     pub fn generation(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("generation".into(), vec![value.into()]);
+        self.url_params
+            .insert("generation".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// generation matches the given value. Setting to 0 makes the operation
     /// succeed only if there are no live versions of the object.
     pub fn if_generation_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_generation_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_generation_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
@@ -3860,19 +4295,22 @@ impl ObjectsUpdateCall {
     /// the precondition fails. Setting to 0 makes the operation succeed only
     /// if there is a live version of the object.
     pub fn if_generation_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_generation_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_generation_not_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// metageneration matches the given value.
     pub fn if_metageneration_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_match".into(), vec![value.into()]);
         self
     }
     /// Makes the operation conditional on whether the object's current
     /// metageneration does not match the given value.
     pub fn if_metageneration_not_match(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("if_metageneration_not_match".into(), vec![value.into()]);
+        self.url_params
+            .insert("if_metageneration_not_match".into(), vec![value.into()]);
         self
     }
     /// Name of the object. For information about how to URL encode object
@@ -3883,39 +4321,49 @@ impl ObjectsUpdateCall {
     }
     /// Apply a predefined set of access controls to this object.
     pub fn predefined_acl(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("predefined_acl".into(), vec![value.into()]);
+        self.url_params
+            .insert("predefined_acl".into(), vec![value.into()]);
         self
     }
     /// Set of properties to return. Defaults to full.
     pub fn projection(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("projection".into(), vec![value.into()]);
+        self.url_params
+            .insert("projection".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Object> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .put(format!("{}b/{}/o/{}", client.base_path,self.bucket.unwrap(),self.object.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .put(format!(
+                "{}b/{}/o/{}",
+                client.base_path,
+                self.bucket.unwrap(),
+                self.object.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -3927,8 +4375,8 @@ impl ObjectsUpdateCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Object = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Object = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -3952,20 +4400,23 @@ impl ObjectsWatchAllCall {
     /// have their name, truncated after the delimiter, returned in prefixes.
     /// Duplicate prefixes are omitted.
     pub fn delimiter(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("delimiter".into(), vec![value.into()]);
+        self.url_params
+            .insert("delimiter".into(), vec![value.into()]);
         self
     }
     /// Filter results to objects whose names are lexicographically before
     /// endOffset. If startOffset is also set, the objects listed will have
     /// names between startOffset (inclusive) and endOffset (exclusive).
     pub fn end_offset(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("end_offset".into(), vec![value.into()]);
+        self.url_params
+            .insert("end_offset".into(), vec![value.into()]);
         self
     }
     /// If true, objects that end in exactly one instance of delimiter will
     /// have their metadata included in items in addition to prefixes.
     pub fn include_trailing_delimiter(mut self, value: bool) -> Self {
-        self.url_params.insert("include_trailing_delimiter".into(), vec![value.to_string()]);
+        self.url_params
+            .insert("include_trailing_delimiter".into(), vec![value.to_string()]);
         self
     }
     /// Maximum number of items plus prefixes to return in a single page of
@@ -3973,13 +4424,15 @@ impl ObjectsWatchAllCall {
     /// be returned than requested. The service will use this parameter or
     /// 1,000 items, whichever is smaller.
     pub fn max_results(mut self, value: i64) -> Self {
-        self.url_params.insert("max_results".into(), vec![value.to_string()]);
+        self.url_params
+            .insert("max_results".into(), vec![value.to_string()]);
         self
     }
     /// A previously-returned page token representing part of the larger set
     /// of results to view.
     pub fn page_token(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("page_token".into(), vec![value.into()]);
+        self.url_params
+            .insert("page_token".into(), vec![value.into()]);
         self
     }
     /// Filter results to objects whose names begin with this prefix.
@@ -3989,13 +4442,15 @@ impl ObjectsWatchAllCall {
     }
     /// Set of properties to return. Defaults to noAcl.
     pub fn projection(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("projection".into(), vec![value.into()]);
+        self.url_params
+            .insert("projection".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// Filter results to objects whose names are lexicographically equal to
@@ -4003,34 +4458,42 @@ impl ObjectsWatchAllCall {
     /// will have names between startOffset (inclusive) and endOffset
     /// (exclusive).
     pub fn start_offset(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("start_offset".into(), vec![value.into()]);
+        self.url_params
+            .insert("start_offset".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request. Required for Requester
     /// Pays buckets.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
     /// If true, lists all versions of an object as distinct results. The
     /// default is false. For more information, see Object Versioning.
     pub fn versions(mut self, value: bool) -> Self {
-        self.url_params.insert("versions".into(), vec![value.to_string()]);
+        self.url_params
+            .insert("versions".into(), vec![value.to_string()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::Channel> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .post(format!("{}b/{}/o/watch", client.base_path,self.bucket.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .post(format!(
+                "{}b/{}/o/watch",
+                client.base_path,
+                self.bucket.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -4042,11 +4505,10 @@ impl ObjectsWatchAllCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::Channel = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::Channel = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
-
 
 impl ProjectsHmacKeysService {
     /// Creates a new HMAC key for the specified service account.
@@ -4102,27 +4564,34 @@ impl ProjectsHmacKeysCreateCall {
     }
     /// Email address of the service account.
     pub fn service_account_email(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("service_account_email".into(), vec![value.into()]);
+        self.url_params
+            .insert("service_account_email".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::HmacKey> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .post(format!("{}projects/{}/hmacKeys", client.base_path,self.project_id.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .post(format!(
+                "{}projects/{}/hmacKeys",
+                client.base_path,
+                self.project_id.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -4133,8 +4602,8 @@ impl ProjectsHmacKeysCreateCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::HmacKey = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::HmacKey = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -4159,22 +4628,29 @@ impl ProjectsHmacKeysDeleteCall {
     }
     /// The project to be billed for this request.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<()> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .delete(format!("{}projects/{}/hmacKeys/{}", client.base_path,self.project_id.unwrap(),self.access_id.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .delete(format!(
+                "{}projects/{}/hmacKeys/{}",
+                client.base_path,
+                self.project_id.unwrap(),
+                self.access_id.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -4185,7 +4661,7 @@ impl ProjectsHmacKeysDeleteCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            Ok(())
+        Ok(())
     }
 }
 
@@ -4210,22 +4686,29 @@ impl ProjectsHmacKeysGetCall {
     }
     /// The project to be billed for this request.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::HmacKeyMetadata> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}projects/{}/hmacKeys/{}", client.base_path,self.project_id.unwrap(),self.access_id.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}projects/{}/hmacKeys/{}",
+                client.base_path,
+                self.project_id.unwrap(),
+                self.access_id.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -4236,8 +4719,8 @@ impl ProjectsHmacKeysGetCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::HmacKeyMetadata = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::HmacKeyMetadata = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -4256,13 +4739,15 @@ impl ProjectsHmacKeysListCall {
     /// accounts in a single response is too high, the page will truncated
     /// and a next page token will be returned.
     pub fn max_results(mut self, value: i64) -> Self {
-        self.url_params.insert("max_results".into(), vec![value.to_string()]);
+        self.url_params
+            .insert("max_results".into(), vec![value.to_string()]);
         self
     }
     /// A previously-returned page token representing part of the larger set
     /// of results to view.
     pub fn page_token(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("page_token".into(), vec![value.into()]);
+        self.url_params
+            .insert("page_token".into(), vec![value.into()]);
         self
     }
     /// Name of the project in which to look for HMAC keys.
@@ -4272,32 +4757,40 @@ impl ProjectsHmacKeysListCall {
     }
     /// If present, only keys for the given service account are returned.
     pub fn service_account_email(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("service_account_email".into(), vec![value.into()]);
+        self.url_params
+            .insert("service_account_email".into(), vec![value.into()]);
         self
     }
     /// Whether or not to show keys in the DELETED state.
     pub fn show_deleted_keys(mut self, value: bool) -> Self {
-        self.url_params.insert("show_deleted_keys".into(), vec![value.to_string()]);
+        self.url_params
+            .insert("show_deleted_keys".into(), vec![value.to_string()]);
         self
     }
     /// The project to be billed for this request.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::HmacKeysMetadata> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}projects/{}/hmacKeys", client.base_path,self.project_id.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}projects/{}/hmacKeys",
+                client.base_path,
+                self.project_id.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -4308,8 +4801,8 @@ impl ProjectsHmacKeysListCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::HmacKeysMetadata = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::HmacKeysMetadata = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
 
@@ -4335,22 +4828,29 @@ impl ProjectsHmacKeysUpdateCall {
     }
     /// The project to be billed for this request.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::HmacKeyMetadata> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .put(format!("{}projects/{}/hmacKeys/{}", client.base_path,self.project_id.unwrap(),self.access_id.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .put(format!(
+                "{}projects/{}/hmacKeys/{}",
+                client.base_path,
+                self.project_id.unwrap(),
+                self.access_id.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .json(&self.request)
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
@@ -4362,11 +4862,10 @@ impl ProjectsHmacKeysUpdateCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::HmacKeyMetadata = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::HmacKeyMetadata = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
-
 
 impl ProjectsServiceAccountService {
     /// Get the email address of this project's Google Cloud Storage service
@@ -4394,27 +4893,34 @@ impl ProjectsServiceAccountGetCall {
     /// The project to be billed for this request if the target bucket is
     /// requester-pays bucket.
     pub fn provisional_user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("provisional_user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("provisional_user_project".into(), vec![value.into()]);
         self
     }
     /// The project to be billed for this request.
     pub fn user_project(mut self, value: impl Into<String>) -> Self {
-        self.url_params.insert("user_project".into(), vec![value.into()]);
+        self.url_params
+            .insert("user_project".into(), vec![value.into()]);
         self
     }
 
-
     pub async fn execute(self) -> Result<model::ServiceAccount> {
         let client = self.client.inner;
-        let tok = client
-            .cred
-            .access_token()
-            .await
-            .map_err(Error::wrap)?;
+        let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let res = client
             .http_client
-            .get(format!("{}projects/{}/serviceAccount", client.base_path,self.project_id.unwrap()))
-            .query(&self.url_params.iter().map(|(k,v)| (k.as_str(), v[0].as_str())).collect::<Vec<(&str, &str)>>())
+            .get(format!(
+                "{}projects/{}/serviceAccount",
+                client.base_path,
+                self.project_id.unwrap()
+            ))
+            .query(
+                &self
+                    .url_params
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v[0].as_str()))
+                    .collect::<Vec<(&str, &str)>>(),
+            )
             .query(&[("alt", "json")])
             .query(&[("prettyPrint", "false")])
             .bearer_auth(tok.value)
@@ -4425,13 +4931,10 @@ impl ProjectsServiceAccountGetCall {
             let error: ApiErrorReply = res.json().await.map_err(Error::wrap)?;
             return Err(Error::wrap(error.into_inner()));
         }
-            let res: model::ServiceAccount = res.json().await.map_err(Error::wrap)?;
-            Ok(res)
+        let res: model::ServiceAccount = res.json().await.map_err(Error::wrap)?;
+        Ok(res)
     }
 }
-
-
-
 
 fn set_path(base: &str, path: &str) -> String {
     let mut url = reqwest::Url::parse(base).unwrap();
