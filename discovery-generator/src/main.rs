@@ -15,6 +15,7 @@
 #![allow(dead_code)]
 
 use anyhow::{anyhow, Result};
+use chrono::Datelike;
 use regex::Regex;
 use std::collections::BTreeMap;
 use std::fmt::Write as FmtWrite;
@@ -119,6 +120,26 @@ impl DocumentGenerator {
 
     /// Generate license headers.
     fn license(&mut self) -> Result<()> {
+        let year = chrono::Utc::now().year();
+        write!(
+            &mut self.b,
+            "// Copyright {} Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the \"License\");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an \"AS IS\" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+",
+            year
+        )?;
         Ok(())
     }
 
