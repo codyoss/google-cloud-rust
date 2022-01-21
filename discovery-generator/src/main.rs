@@ -33,12 +33,9 @@ use model::*;
 use schema::*;
 use util::*;
 
-// TODO(codyoss): we should figure out what x-goog headers look like for this and generate
-//       those in as well
 // TODO(codyoss): Find a way to sniff the content type for uploads, or we just way the user must provide the content-type?
 // TODO(codyoss): support resumable/chunked uploads
 // TODO(codyoss): Consult storage team about proper retrying for downloads/uploads. This gets tricky fast.
-// TODO(codyoss): check repeated field and adjust
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "discogen")]
@@ -274,6 +271,15 @@ impl Default for ClientRef {{
     fn default() -> Self {{
         let mut headers = http::HeaderMap::with_capacity(1);
         headers.insert(\"User-Agent\", \"gcloud-rust/0.1\".parse().unwrap());
+        headers.insert(
+            \"x-goog-api-client\",
+            format!(
+                \"gl-rust/{{}}  gdcl/0.1\",
+                rustc_version_runtime::version().to_string()
+            )
+            .parse()
+            .unwrap(),
+        );
         let client = reqwest::Client::builder().default_headers(headers).build().unwrap();
         Self {{
             http_client: client,
@@ -294,6 +300,15 @@ impl Client {{
             .map_err(Error::wrap)?;
         let mut headers = http::HeaderMap::with_capacity(1);
         headers.insert(\"User-Agent\", \"gcloud-rust/0.1\".parse().unwrap());
+        headers.insert(
+            \"x-goog-api-client\",
+            format!(
+                \"gl-rust/{{}}  gdcl/0.1\",
+                rustc_version_runtime::version().to_string()
+            )
+            .parse()
+            .unwrap(),
+        );
         let client = reqwest::Client::builder().default_headers(headers).build().unwrap();
         let inner = ClientRef {{
             base_path: BASE_PATH.into(),

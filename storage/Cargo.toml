@@ -11,6 +11,7 @@ google-cloud-auth = { path = "../auth" }
 bytes = "1.1"
 tokio = { version = "1.12" }
 http = "0.2"
+rustc_version_runtime = "0.2.1"
 
 [dev-dependencies]
 tokio = { version = "1.12", features = ["full", "macros"] }

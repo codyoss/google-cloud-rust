@@ -60,6 +60,15 @@ impl Default for ClientRef {
     fn default() -> Self {
         let mut headers = http::HeaderMap::with_capacity(1);
         headers.insert("User-Agent", "gcloud-rust/0.1".parse().unwrap());
+        headers.insert(
+            "x-goog-api-client",
+            format!(
+                "gl-rust/{}  gdcl/0.1",
+                rustc_version_runtime::version().to_string()
+            )
+            .parse()
+            .unwrap(),
+        );
         let client = reqwest::Client::builder()
             .default_headers(headers)
             .build()
@@ -81,6 +90,15 @@ impl Client {
         let cred = Credential::find_default(cc).await.map_err(Error::wrap)?;
         let mut headers = http::HeaderMap::with_capacity(1);
         headers.insert("User-Agent", "gcloud-rust/0.1".parse().unwrap());
+        headers.insert(
+            "x-goog-api-client",
+            format!(
+                "gl-rust/{}  gdcl/0.1",
+                rustc_version_runtime::version().to_string()
+            )
+            .parse()
+            .unwrap(),
+        );
         let client = reqwest::Client::builder()
             .default_headers(headers)
             .build()

@@ -7,6 +7,8 @@ A Google Cloud Storage Library generated from discovery document.
 ```rust
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use super::model::Object;
     use super::*;
 
@@ -47,23 +49,6 @@ mod tests {
 
     #[tokio::main]
     #[test]
-    async fn test_client_update_metadata() {
-        let client = Client::new().await.unwrap();
-        let resp = client
-            .objects_service()
-            .patch(
-                "codyoss-workspace",
-                "rust-test-1.txt",
-                Object::builder().build(),
-            )
-            .execute()
-            .await
-            .unwrap();
-        println!("{}", resp.updated.unwrap());
-    }
-
-    #[tokio::main]
-    #[test]
     async fn test_client_upload_file() {
         let client = Client::new().await.unwrap();
         let resp = client
@@ -79,6 +64,25 @@ mod tests {
             .await
             .unwrap();
         println!("{}", resp.updated.unwrap());
+    }
+
+    #[tokio::main]
+    #[test]
+    async fn test_client_update_metadata() {
+        let client = Client::new().await.unwrap();
+        let mut map: HashMap<String, String> = HashMap::new();
+        map.insert("foo".into(), "bar".into());
+        let resp = client
+            .objects_service()
+            .patch(
+                "codyoss-workspace",
+                "rust-file-test-1.txt",
+                Object::builder().metadata(map).build(),
+            )
+            .execute()
+            .await
+            .unwrap();
+        println!("{:?}", resp.metadata.unwrap());
     }
 
     #[tokio::main]
