@@ -35,13 +35,10 @@ use util::*;
 
 // TODO(codyoss): we should figure out what x-goog headers look like for this and generate
 //       those in as well
-// TODO(codyoss): Should req params be moved to call instead of builder methods. If we
-//       don't do this we should generate in some validation.
 // TODO(codyoss): Find a way to sniff the content type for uploads, or we just way the user must provide the content-type?
 // TODO(codyoss): support resumable/chunked uploads
 // TODO(codyoss): Consult storage team about proper retrying for downloads/uploads. This gets tricky fast.
 // TODO(codyoss): check repeated field and adjust
-// TODO(codyoss): Add extra docs for required call params
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "discogen")]
@@ -515,7 +512,24 @@ fn service_methods(service: &str, methods: &BTreeMap<String, Method>) -> Result<
         let service_method_call = snake_to_pascal(&format!("{}_{}Call", service, name));
         let service_method_input = service_method_input(method)?;
         let docs = if let Some(comment) = &method.description {
-            as_comment("    ", comment.clone(), false)?
+            let mut comment = as_comment("    ", comment.clone(), false)?;
+            for param_key in &method.parameter_order {
+                let param_docs = format!(
+                    "- {}: {}",
+                    camel_to_snake(param_key),
+                    method
+                        .parameters
+                        .get(param_key)
+                        .unwrap()
+                        .schema
+                        .description
+                        .as_deref()
+                        .unwrap()
+                );
+                let param_comment = as_comment("    ", param_docs, true)?;
+                comment.push_str(&param_comment);
+            }
+            comment
         } else {
             String::new()
         };

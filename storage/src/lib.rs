@@ -197,6 +197,10 @@ pub struct ProjectsServiceAccountService {
 impl BucketAccessControlsService {
     /// Permanently deletes the ACL entry for the specified entity on the
     /// specified bucket.
+    /// - bucket: Name of a bucket.
+    /// - entity: The entity holding the permission. Can be user-userId,
+    ///   user-emailAddress, group-groupId, group-emailAddress, allUsers, or
+    ///   allAuthenticatedUsers.
     pub fn delete(
         &self,
         bucket: impl Into<String>,
@@ -212,6 +216,10 @@ impl BucketAccessControlsService {
     }
     /// Returns the ACL entry for the specified entity on the specified
     /// bucket.
+    /// - bucket: Name of a bucket.
+    /// - entity: The entity holding the permission. Can be user-userId,
+    ///   user-emailAddress, group-groupId, group-emailAddress, allUsers, or
+    ///   allAuthenticatedUsers.
     pub fn get(
         &self,
         bucket: impl Into<String>,
@@ -226,6 +234,7 @@ impl BucketAccessControlsService {
         c
     }
     /// Creates a new ACL entry on the specified bucket.
+    /// - bucket: Name of a bucket.
     pub fn insert(
         &self,
         bucket: impl Into<String>,
@@ -240,6 +249,7 @@ impl BucketAccessControlsService {
         c
     }
     /// Retrieves ACL entries on the specified bucket.
+    /// - bucket: Name of a bucket.
     pub fn list(&self, bucket: impl Into<String>) -> BucketAccessControlsListCall {
         let mut c = BucketAccessControlsListCall {
             client: self.client.clone(),
@@ -249,6 +259,10 @@ impl BucketAccessControlsService {
         c
     }
     /// Patches an ACL entry on the specified bucket.
+    /// - bucket: Name of a bucket.
+    /// - entity: The entity holding the permission. Can be user-userId,
+    ///   user-emailAddress, group-groupId, group-emailAddress, allUsers, or
+    ///   allAuthenticatedUsers.
     pub fn patch(
         &self,
         bucket: impl Into<String>,
@@ -265,6 +279,10 @@ impl BucketAccessControlsService {
         c
     }
     /// Updates an ACL entry on the specified bucket.
+    /// - bucket: Name of a bucket.
+    /// - entity: The entity holding the permission. Can be user-userId,
+    ///   user-emailAddress, group-groupId, group-emailAddress, allUsers, or
+    ///   allAuthenticatedUsers.
     pub fn update(
         &self,
         bucket: impl Into<String>,
@@ -626,6 +644,7 @@ impl BucketAccessControlsUpdateCall {
 
 impl BucketsService {
     /// Permanently deletes an empty bucket.
+    /// - bucket: Name of a bucket.
     pub fn delete(&self, bucket: impl Into<String>) -> BucketsDeleteCall {
         let mut c = BucketsDeleteCall {
             client: self.client.clone(),
@@ -635,6 +654,7 @@ impl BucketsService {
         c
     }
     /// Returns metadata for the specified bucket.
+    /// - bucket: Name of a bucket.
     pub fn get(&self, bucket: impl Into<String>) -> BucketsGetCall {
         let mut c = BucketsGetCall {
             client: self.client.clone(),
@@ -644,6 +664,7 @@ impl BucketsService {
         c
     }
     /// Returns an IAM policy for the specified bucket.
+    /// - bucket: Name of a bucket.
     pub fn get_iam_policy(&self, bucket: impl Into<String>) -> BucketsGetIamPolicyCall {
         let mut c = BucketsGetIamPolicyCall {
             client: self.client.clone(),
@@ -653,6 +674,7 @@ impl BucketsService {
         c
     }
     /// Creates a new bucket.
+    /// - project: A valid API project identifier.
     pub fn insert(&self, project: impl Into<String>, request: model::Bucket) -> BucketsInsertCall {
         let mut c = BucketsInsertCall {
             client: self.client.clone(),
@@ -663,6 +685,7 @@ impl BucketsService {
         c
     }
     /// Retrieves a list of buckets for a given project.
+    /// - project: A valid API project identifier.
     pub fn list(&self, project: impl Into<String>) -> BucketsListCall {
         let mut c = BucketsListCall {
             client: self.client.clone(),
@@ -672,6 +695,9 @@ impl BucketsService {
         c
     }
     /// Locks retention policy on a bucket.
+    /// - bucket: Name of a bucket.
+    /// - if_metageneration_match: Makes the operation conditional on whether
+    ///   bucket's current metageneration matches the given value.
     pub fn lock_retention_policy(
         &self,
         bucket: impl Into<String>,
@@ -690,6 +716,7 @@ impl BucketsService {
     }
     /// Patches a bucket. Changes to the bucket will be readable immediately
     /// after writing, but configuration changes may take time to propagate.
+    /// - bucket: Name of a bucket.
     pub fn patch(&self, bucket: impl Into<String>, request: model::Bucket) -> BucketsPatchCall {
         let mut c = BucketsPatchCall {
             client: self.client.clone(),
@@ -700,6 +727,7 @@ impl BucketsService {
         c
     }
     /// Updates an IAM policy for the specified bucket.
+    /// - bucket: Name of a bucket.
     pub fn set_iam_policy(
         &self,
         bucket: impl Into<String>,
@@ -715,6 +743,8 @@ impl BucketsService {
     }
     /// Tests a set of permissions on the given bucket to see which, if any,
     /// are held by the caller.
+    /// - bucket: Name of a bucket.
+    /// - permissions: Permissions to test.
     pub fn test_iam_permissions(
         &self,
         bucket: impl Into<String>,
@@ -730,6 +760,7 @@ impl BucketsService {
     }
     /// Updates a bucket. Changes to the bucket will be readable immediately
     /// after writing, but configuration changes may take time to propagate.
+    /// - bucket: Name of a bucket.
     pub fn update(&self, bucket: impl Into<String>, request: model::Bucket) -> BucketsUpdateCall {
         let mut c = BucketsUpdateCall {
             client: self.client.clone(),
@@ -1467,6 +1498,10 @@ impl ChannelsStopCall {
 impl DefaultObjectAccessControlsService {
     /// Permanently deletes the default object ACL entry for the specified
     /// entity on the specified bucket.
+    /// - bucket: Name of a bucket.
+    /// - entity: The entity holding the permission. Can be user-userId,
+    ///   user-emailAddress, group-groupId, group-emailAddress, allUsers, or
+    ///   allAuthenticatedUsers.
     pub fn delete(
         &self,
         bucket: impl Into<String>,
@@ -1482,6 +1517,10 @@ impl DefaultObjectAccessControlsService {
     }
     /// Returns the default object ACL entry for the specified entity on the
     /// specified bucket.
+    /// - bucket: Name of a bucket.
+    /// - entity: The entity holding the permission. Can be user-userId,
+    ///   user-emailAddress, group-groupId, group-emailAddress, allUsers, or
+    ///   allAuthenticatedUsers.
     pub fn get(
         &self,
         bucket: impl Into<String>,
@@ -1496,6 +1535,7 @@ impl DefaultObjectAccessControlsService {
         c
     }
     /// Creates a new default object ACL entry on the specified bucket.
+    /// - bucket: Name of a bucket.
     pub fn insert(
         &self,
         bucket: impl Into<String>,
@@ -1510,6 +1550,7 @@ impl DefaultObjectAccessControlsService {
         c
     }
     /// Retrieves default object ACL entries on the specified bucket.
+    /// - bucket: Name of a bucket.
     pub fn list(&self, bucket: impl Into<String>) -> DefaultObjectAccessControlsListCall {
         let mut c = DefaultObjectAccessControlsListCall {
             client: self.client.clone(),
@@ -1519,6 +1560,10 @@ impl DefaultObjectAccessControlsService {
         c
     }
     /// Patches a default object ACL entry on the specified bucket.
+    /// - bucket: Name of a bucket.
+    /// - entity: The entity holding the permission. Can be user-userId,
+    ///   user-emailAddress, group-groupId, group-emailAddress, allUsers, or
+    ///   allAuthenticatedUsers.
     pub fn patch(
         &self,
         bucket: impl Into<String>,
@@ -1535,6 +1580,10 @@ impl DefaultObjectAccessControlsService {
         c
     }
     /// Updates a default object ACL entry on the specified bucket.
+    /// - bucket: Name of a bucket.
+    /// - entity: The entity holding the permission. Can be user-userId,
+    ///   user-emailAddress, group-groupId, group-emailAddress, allUsers, or
+    ///   allAuthenticatedUsers.
     pub fn update(
         &self,
         bucket: impl Into<String>,
@@ -1910,6 +1959,8 @@ impl DefaultObjectAccessControlsUpdateCall {
 
 impl NotificationsService {
     /// Permanently deletes a notification subscription.
+    /// - bucket: The parent bucket of the notification.
+    /// - notification: ID of the notification to delete.
     pub fn delete(
         &self,
         bucket: impl Into<String>,
@@ -1924,6 +1975,8 @@ impl NotificationsService {
         c
     }
     /// View a notification configuration.
+    /// - bucket: The parent bucket of the notification.
+    /// - notification: Notification ID
     pub fn get(
         &self,
         bucket: impl Into<String>,
@@ -1938,6 +1991,7 @@ impl NotificationsService {
         c
     }
     /// Creates a notification subscription for a given bucket.
+    /// - bucket: The parent bucket of the notification.
     pub fn insert(
         &self,
         bucket: impl Into<String>,
@@ -1952,6 +2006,7 @@ impl NotificationsService {
         c
     }
     /// Retrieves a list of notification subscriptions for a given bucket.
+    /// - bucket: Name of a Google Cloud Storage bucket.
     pub fn list(&self, bucket: impl Into<String>) -> NotificationsListCall {
         let mut c = NotificationsListCall {
             client: self.client.clone(),
@@ -2189,6 +2244,12 @@ impl NotificationsListCall {
 impl ObjectAccessControlsService {
     /// Permanently deletes the ACL entry for the specified entity on the
     /// specified object.
+    /// - bucket: Name of a bucket.
+    /// - object: Name of the object. For information about how to URL encode
+    ///   object names to be path safe, see Encoding URI Path Parts.
+    /// - entity: The entity holding the permission. Can be user-userId,
+    ///   user-emailAddress, group-groupId, group-emailAddress, allUsers, or
+    ///   allAuthenticatedUsers.
     pub fn delete(
         &self,
         bucket: impl Into<String>,
@@ -2206,6 +2267,12 @@ impl ObjectAccessControlsService {
     }
     /// Returns the ACL entry for the specified entity on the specified
     /// object.
+    /// - bucket: Name of a bucket.
+    /// - object: Name of the object. For information about how to URL encode
+    ///   object names to be path safe, see Encoding URI Path Parts.
+    /// - entity: The entity holding the permission. Can be user-userId,
+    ///   user-emailAddress, group-groupId, group-emailAddress, allUsers, or
+    ///   allAuthenticatedUsers.
     pub fn get(
         &self,
         bucket: impl Into<String>,
@@ -2222,6 +2289,9 @@ impl ObjectAccessControlsService {
         c
     }
     /// Creates a new ACL entry on the specified object.
+    /// - bucket: Name of a bucket.
+    /// - object: Name of the object. For information about how to URL encode
+    ///   object names to be path safe, see Encoding URI Path Parts.
     pub fn insert(
         &self,
         bucket: impl Into<String>,
@@ -2238,6 +2308,9 @@ impl ObjectAccessControlsService {
         c
     }
     /// Retrieves ACL entries on the specified object.
+    /// - bucket: Name of a bucket.
+    /// - object: Name of the object. For information about how to URL encode
+    ///   object names to be path safe, see Encoding URI Path Parts.
     pub fn list(
         &self,
         bucket: impl Into<String>,
@@ -2252,6 +2325,12 @@ impl ObjectAccessControlsService {
         c
     }
     /// Patches an ACL entry on the specified object.
+    /// - bucket: Name of a bucket.
+    /// - object: Name of the object. For information about how to URL encode
+    ///   object names to be path safe, see Encoding URI Path Parts.
+    /// - entity: The entity holding the permission. Can be user-userId,
+    ///   user-emailAddress, group-groupId, group-emailAddress, allUsers, or
+    ///   allAuthenticatedUsers.
     pub fn patch(
         &self,
         bucket: impl Into<String>,
@@ -2270,6 +2349,12 @@ impl ObjectAccessControlsService {
         c
     }
     /// Updates an ACL entry on the specified object.
+    /// - bucket: Name of a bucket.
+    /// - object: Name of the object. For information about how to URL encode
+    ///   object names to be path safe, see Encoding URI Path Parts.
+    /// - entity: The entity holding the permission. Can be user-userId,
+    ///   user-emailAddress, group-groupId, group-emailAddress, allUsers, or
+    ///   allAuthenticatedUsers.
     pub fn update(
         &self,
         bucket: impl Into<String>,
@@ -2688,6 +2773,11 @@ impl ObjectAccessControlsUpdateCall {
 impl ObjectsService {
     /// Concatenates a list of existing objects into a new object in the same
     /// bucket.
+    /// - destination_bucket: Name of the bucket containing the source
+    ///   objects. The destination object is stored in this bucket.
+    /// - destination_object: Name of the new object. For information about
+    ///   how to URL encode object names to be path safe, see Encoding URI
+    ///   Path Parts.
     pub fn compose(
         &self,
         destination_bucket: impl Into<String>,
@@ -2705,6 +2795,18 @@ impl ObjectsService {
     }
     /// Copies a source object to a destination object. Optionally overrides
     /// metadata.
+    /// - source_bucket: Name of the bucket in which to find the source
+    ///   object.
+    /// - source_object: Name of the source object. For information about how
+    ///   to URL encode object names to be path safe, see Encoding URI Path
+    ///   Parts.
+    /// - destination_bucket: Name of the bucket in which to store the new
+    ///   object. Overrides the provided object metadata's bucket value, if
+    ///   any.For information about how to URL encode object names to be path
+    ///   safe, see Encoding URI Path Parts.
+    /// - destination_object: Name of the new object. Required when the
+    ///   object metadata is not otherwise provided. Overrides the object
+    ///   metadata's name value, if any.
     pub fn copy(
         &self,
         source_bucket: impl Into<String>,
@@ -2727,6 +2829,9 @@ impl ObjectsService {
     /// Deletes an object and its metadata. Deletions are permanent if
     /// versioning is not enabled for the bucket, or if the generation
     /// parameter is used.
+    /// - bucket: Name of the bucket in which the object resides.
+    /// - object: Name of the object. For information about how to URL encode
+    ///   object names to be path safe, see Encoding URI Path Parts.
     pub fn delete(
         &self,
         bucket: impl Into<String>,
@@ -2741,6 +2846,9 @@ impl ObjectsService {
         c
     }
     /// Retrieves an object or its metadata.
+    /// - bucket: Name of the bucket in which the object resides.
+    /// - object: Name of the object. For information about how to URL encode
+    ///   object names to be path safe, see Encoding URI Path Parts.
     pub fn get(&self, bucket: impl Into<String>, object: impl Into<String>) -> ObjectsGetCall {
         let mut c = ObjectsGetCall {
             client: self.client.clone(),
@@ -2751,6 +2859,9 @@ impl ObjectsService {
         c
     }
     /// Returns an IAM policy for the specified object.
+    /// - bucket: Name of the bucket in which the object resides.
+    /// - object: Name of the object. For information about how to URL encode
+    ///   object names to be path safe, see Encoding URI Path Parts.
     pub fn get_iam_policy(
         &self,
         bucket: impl Into<String>,
@@ -2765,6 +2876,8 @@ impl ObjectsService {
         c
     }
     /// Stores a new object and metadata.
+    /// - bucket: Name of the bucket in which to store the new object.
+    ///   Overrides the provided object metadata's bucket value, if any.
     pub fn insert(&self, bucket: impl Into<String>, request: model::Object) -> ObjectsInsertCall {
         let mut c = ObjectsInsertCall {
             client: self.client.clone(),
@@ -2775,6 +2888,7 @@ impl ObjectsService {
         c
     }
     /// Retrieves a list of objects matching the criteria.
+    /// - bucket: Name of the bucket in which to look for objects.
     pub fn list(&self, bucket: impl Into<String>) -> ObjectsListCall {
         let mut c = ObjectsListCall {
             client: self.client.clone(),
@@ -2784,6 +2898,9 @@ impl ObjectsService {
         c
     }
     /// Patches an object's metadata.
+    /// - bucket: Name of the bucket in which the object resides.
+    /// - object: Name of the object. For information about how to URL encode
+    ///   object names to be path safe, see Encoding URI Path Parts.
     pub fn patch(
         &self,
         bucket: impl Into<String>,
@@ -2801,6 +2918,18 @@ impl ObjectsService {
     }
     /// Rewrites a source object to a destination object. Optionally
     /// overrides metadata.
+    /// - source_bucket: Name of the bucket in which to find the source
+    ///   object.
+    /// - source_object: Name of the source object. For information about how
+    ///   to URL encode object names to be path safe, see Encoding URI Path
+    ///   Parts.
+    /// - destination_bucket: Name of the bucket in which to store the new
+    ///   object. Overrides the provided object metadata's bucket value, if
+    ///   any.
+    /// - destination_object: Name of the new object. Required when the
+    ///   object metadata is not otherwise provided. Overrides the object
+    ///   metadata's name value, if any. For information about how to URL
+    ///   encode object names to be path safe, see Encoding URI Path Parts.
     pub fn rewrite(
         &self,
         source_bucket: impl Into<String>,
@@ -2821,6 +2950,9 @@ impl ObjectsService {
         c
     }
     /// Updates an IAM policy for the specified object.
+    /// - bucket: Name of the bucket in which the object resides.
+    /// - object: Name of the object. For information about how to URL encode
+    ///   object names to be path safe, see Encoding URI Path Parts.
     pub fn set_iam_policy(
         &self,
         bucket: impl Into<String>,
@@ -2838,6 +2970,10 @@ impl ObjectsService {
     }
     /// Tests a set of permissions on the given object to see which, if any,
     /// are held by the caller.
+    /// - bucket: Name of the bucket in which the object resides.
+    /// - object: Name of the object. For information about how to URL encode
+    ///   object names to be path safe, see Encoding URI Path Parts.
+    /// - permissions: Permissions to test.
     pub fn test_iam_permissions(
         &self,
         bucket: impl Into<String>,
@@ -2854,6 +2990,9 @@ impl ObjectsService {
         c
     }
     /// Updates an object's metadata.
+    /// - bucket: Name of the bucket in which the object resides.
+    /// - object: Name of the object. For information about how to URL encode
+    ///   object names to be path safe, see Encoding URI Path Parts.
     pub fn update(
         &self,
         bucket: impl Into<String>,
@@ -2870,6 +3009,7 @@ impl ObjectsService {
         c
     }
     /// Watch for changes on all objects in a bucket.
+    /// - bucket: Name of the bucket in which to look for objects.
     pub fn watch_all(
         &self,
         bucket: impl Into<String>,
@@ -4333,6 +4473,8 @@ impl ObjectsWatchAllCall {
 
 impl ProjectsHmacKeysService {
     /// Creates a new HMAC key for the specified service account.
+    /// - project_id: Project ID owning the service account.
+    /// - service_account_email: Email address of the service account.
     pub fn create(
         &self,
         project_id: impl Into<String>,
@@ -4350,6 +4492,8 @@ impl ProjectsHmacKeysService {
         c
     }
     /// Deletes an HMAC key.
+    /// - project_id: Project ID owning the requested key
+    /// - access_id: Name of the HMAC key to be deleted.
     pub fn delete(
         &self,
         project_id: impl Into<String>,
@@ -4364,6 +4508,9 @@ impl ProjectsHmacKeysService {
         c
     }
     /// Retrieves an HMAC key's metadata
+    /// - project_id: Project ID owning the service account of the requested
+    ///   key.
+    /// - access_id: Name of the HMAC key.
     pub fn get(
         &self,
         project_id: impl Into<String>,
@@ -4378,6 +4525,7 @@ impl ProjectsHmacKeysService {
         c
     }
     /// Retrieves a list of HMAC keys matching the criteria.
+    /// - project_id: Name of the project in which to look for HMAC keys.
     pub fn list(&self, project_id: impl Into<String>) -> ProjectsHmacKeysListCall {
         let mut c = ProjectsHmacKeysListCall {
             client: self.client.clone(),
@@ -4388,6 +4536,9 @@ impl ProjectsHmacKeysService {
     }
     /// Updates the state of an HMAC key. See the HMAC Key resource
     /// descriptor for valid states.
+    /// - project_id: Project ID owning the service account of the updated
+    ///   key.
+    /// - access_id: Name of the HMAC key being updated.
     pub fn update(
         &self,
         project_id: impl Into<String>,
@@ -4679,6 +4830,7 @@ impl ProjectsHmacKeysUpdateCall {
 impl ProjectsServiceAccountService {
     /// Get the email address of this project's Google Cloud Storage service
     /// account.
+    /// - project_id: Project ID
     pub fn get(&self, project_id: impl Into<String>) -> ProjectsServiceAccountGetCall {
         let mut c = ProjectsServiceAccountGetCall {
             client: self.client.clone(),
