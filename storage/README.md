@@ -15,9 +15,7 @@ mod tests {
         let client = Client::new().await.unwrap();
         let resp = client
             .objects_service()
-            .get()
-            .bucket("codyoss-workspace")
-            .object("test.txt")
+            .get("codyoss-workspace", "rust-test-1.txt")
             .execute()
             .await
             .unwrap();
@@ -25,9 +23,7 @@ mod tests {
 
         let resp = client
             .objects_service()
-            .get()
-            .bucket("codyoss-workspace")
-            .object("test.txt")
+            .get("codyoss-workspace", "rust-test-1.txt")
             .download()
             .await
             .unwrap();
@@ -40,8 +36,7 @@ mod tests {
         let client = Client::new().await.unwrap();
         let resp = client
             .objects_service()
-            .insert(Default::default())
-            .bucket("codyoss-workspace")
+            .insert("codyoss-workspace",Default::default())
             .name("rust-test-1.txt")
             .upload("this is a test from rust", "text/plain; charset=utf-8")
             .await
@@ -55,8 +50,7 @@ mod tests {
         let client = Client::new().await.unwrap();
         let resp = client
             .objects_service()
-            .insert(Default::default())
-            .bucket("codyoss-workspace")
+            .insert("codyoss-workspace",Default::default())
             .name("rust-file-test-1.txt")
             .upload(
                 BytesReader::from_path(
@@ -78,8 +72,7 @@ mod tests {
         let client = Client::new().await.unwrap();
         let resp = client
             .objects_service()
-            .list()
-            .bucket("codyoss-workspace")
+            .list("codyoss-workspace")
             .execute()
             .await
             .unwrap();
@@ -88,5 +81,4 @@ mod tests {
         }
     }
 }
-
 ```
