@@ -7,6 +7,7 @@ A Google Cloud Storage Library generated from discovery document.
 ```rust
 #[cfg(test)]
 mod tests {
+    use super::model::Object;
     use super::*;
 
     #[tokio::main]
@@ -36,9 +37,26 @@ mod tests {
         let client = Client::new().await.unwrap();
         let resp = client
             .objects_service()
-            .insert("codyoss-workspace",Default::default())
+            .insert("codyoss-workspace", Default::default())
             .name("rust-test-1.txt")
             .upload("this is a test from rust", "text/plain; charset=utf-8")
+            .await
+            .unwrap();
+        println!("{}", resp.updated.unwrap());
+    }
+
+    #[tokio::main]
+    #[test]
+    async fn test_client_update_metadata() {
+        let client = Client::new().await.unwrap();
+        let resp = client
+            .objects_service()
+            .patch(
+                "codyoss-workspace",
+                "rust-test-1.txt",
+                Object::builder().build(),
+            )
+            .execute()
             .await
             .unwrap();
         println!("{}", resp.updated.unwrap());
@@ -50,7 +68,7 @@ mod tests {
         let client = Client::new().await.unwrap();
         let resp = client
             .objects_service()
-            .insert("codyoss-workspace",Default::default())
+            .insert("codyoss-workspace", Default::default())
             .name("rust-file-test-1.txt")
             .upload(
                 BytesReader::from_path(

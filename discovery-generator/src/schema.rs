@@ -162,7 +162,10 @@ fn flat_schema_structs(
                             struct_field.field_type = "Vec<u8>".into();
                         }
                         _ => {
-                            struct_field.field_type = basic_struct_type(add_prop_schema_type);
+                            struct_field.field_type = format!(
+                                "std::collections::HashMap<String, {}>",
+                                basic_struct_type(add_prop_schema_type)
+                            );
                         }
                     }
                 } else {
