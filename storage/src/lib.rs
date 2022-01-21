@@ -3580,6 +3580,7 @@ pub struct ObjectsInsertCall {
     request: model::Object,
     url_params: std::collections::HashMap<String, Vec<String>>,
     bucket: Option<String>,
+    media_content_type: Option<String>,
 }
 
 impl ObjectsInsertCall {
@@ -3668,15 +3669,23 @@ impl ObjectsInsertCall {
             .insert("user_project".into(), vec![value.into()]);
         self
     }
+    /// Explicitly sets the content type of the media being uploaded.
+    pub fn media_content_type(mut self, value: impl Into<String>) -> Self {
+        self.media_content_type = Some(value.into());
+        self
+    }
 
-    pub async fn upload(
-        mut self,
-        media: impl Into<BytesReader>,
-        media_mime_type: impl Into<std::string::String>,
-    ) -> Result<model::Object> {
+    pub async fn upload(mut self, media: impl Into<BytesReader>) -> Result<model::Object> {
         let client = self.client.inner;
         let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let body = serde_json::to_vec(&self.request).map_err(Error::wrap)?;
+        let mut media_part =
+            reqwest::multipart::Part::bytes(media.into().read_all().await?.as_ref().to_owned());
+        if let Some(media_content_type) = self.media_content_type {
+            media_part = media_part
+                .mime_str(&media_content_type)
+                .map_err(Error::wrap)?;
+        }
         let form = reqwest::multipart::Form::new()
             .part(
                 "body",
@@ -3684,12 +3693,7 @@ impl ObjectsInsertCall {
                     .mime_str("application/json")
                     .map_err(Error::wrap)?,
             )
-            .part(
-                "media",
-                reqwest::multipart::Part::bytes(media.into().read_all().await?.as_ref().to_owned())
-                    .mime_str(media_mime_type.into().as_str())
-                    .map_err(Error::wrap)?,
-            );
+            .part("media", media_part);
         self.url_params
             .insert("uploadType".into(), vec!["multipart".into()]);
 

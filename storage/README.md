@@ -41,7 +41,8 @@ mod tests {
             .objects_service()
             .insert("codyoss-workspace", Default::default())
             .name("rust-test-1.txt")
-            .upload("this is a test from rust", "text/plain; charset=utf-8")
+            .media_content_type("text/plain; charset=utf-8")
+            .upload("this is a test from rust")
             .await
             .unwrap();
         println!("{}", resp.updated.unwrap());
@@ -55,12 +56,10 @@ mod tests {
             .objects_service()
             .insert("codyoss-workspace", Default::default())
             .name("rust-file-test-1.txt")
-            .upload(
-                BytesReader::from_path(
-                    "/Users/codyoss/oss/google-cloud-rust/storage/upload-me.txt",
-                ),
-                "text/plain; charset=utf-8",
-            )
+            .media_content_type("text/plain; charset=utf-8")
+            .upload(BytesReader::from_path(
+                "/Users/codyoss/oss/google-cloud-rust/storage/upload-me.txt",
+            ))
             .await
             .unwrap();
         println!("{}", resp.updated.unwrap());

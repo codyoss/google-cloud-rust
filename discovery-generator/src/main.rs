@@ -654,8 +654,24 @@ fn call_impl(service: &str, methods: &BTreeMap<String, Method>) -> Result<String
     let mut method_buf: String = String::new();
     for (name, method) in methods {
         let call = snake_to_pascal(format!("{}_{}Call", service, name).as_str());
-        let call_params = call_params(method)?;
-        let call_param_setters = call_param_setters(&method.parameters)?;
+        let mut call_params = call_params(method)?;
+        let mut call_param_setters = call_param_setters(&method.parameters)?;
+        if method.media_upload.is_some() {
+            write!(
+                &mut call_params,
+                "
+    media_content_type: Option<String>,"
+            )?;
+            write!(
+                &mut call_param_setters,
+                "
+    /// Explicitly sets the content type of the media being uploaded.
+    pub fn media_content_type(mut self, value: impl Into<String>) -> Self {{
+        self.media_content_type = Some(value.into());
+        self
+    }}"
+            )?;
+        }
         let return_type: String = if let Some(response) = &method.response {
             let s = response
                 .schema_ref
@@ -1167,11 +1183,17 @@ fn media_upload_method(
     pub async fn upload(
         mut self, 
         media: impl Into<BytesReader>,
-        media_mime_type: impl Into<std::string::String>
     ) -> Result<{}> {{
         let client = self.client.inner;
         let tok = client.cred.access_token().await.map_err(Error::wrap)?;
         let body = serde_json::to_vec(&self.request).map_err(Error::wrap)?;
+        let mut media_part =
+            reqwest::multipart::Part::bytes(media.into().read_all().await?.as_ref().to_owned());
+        if let Some(media_content_type) = self.media_content_type {{
+            media_part = media_part
+                .mime_str(&media_content_type)
+                .map_err(Error::wrap)?;
+        }}
         let form = reqwest::multipart::Form::new()
             .part(
                 \"body\",
@@ -1179,12 +1201,7 @@ fn media_upload_method(
                 .mime_str(\"application/json\")
                 .map_err(Error::wrap)?,
             )
-            .part(
-                \"media\",
-                reqwest::multipart::Part::bytes(media.into().read_all().await?.as_ref().to_owned())
-                    .mime_str(media_mime_type.into().as_str())
-                    .map_err(Error::wrap)?,
-            );
+            .part(\"media\", media_part);
         self.url_params
             .insert(\"uploadType\".into(), vec![\"multipart\".into()]);
 
