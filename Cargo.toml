@@ -6,4 +6,5 @@ members = [
   "auth",
   "discovery-generator",
   "storage",
+  "userexample",
 ]

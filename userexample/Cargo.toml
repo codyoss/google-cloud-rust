@@ -1,0 +1,10 @@
+[package]
+edition = "2021"
+name = "userexample"
+version = "0.1.0"
+
+[dependencies]
+google-cloud-storage = {path = "../storage"}
+tokio = {version = "1.12"}
+tracing = "0.1.37"
+tracing-subscriber = "0.3.17"
