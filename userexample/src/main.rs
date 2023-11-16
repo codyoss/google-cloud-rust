@@ -4,13 +4,16 @@ use tracing::info;
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing::subscriber::set_global_default(tracing_subscriber::FmtSubscriber::new()).unwrap();
+    let bucket = std::env::var("DEMO_BUCKET").expect("Missing DEMO_BUCKET environment variable");
+    let input_file_path = std::env::var("DEMO_DATA_PATH").expect("Missing DEMO_DATA_PATH environment variable");
+
     let client = Client::new().await?;
     let mut bytes: &[u8] = "testing upload".as_bytes();
 
     // upload an object from memory
     let resp = client
         .objects_service()
-        .insert("codyoss-workspace", Default::default())
+        .insert(bucket.clone(), Default::default())
         .name("rust-test.txt")
         .media_content_type("text/plain; charset=utf-8")
         .upload(&mut bytes)
@@ -19,15 +22,13 @@ async fn main() -> Result<()> {
     info!("Uploaded from memory: {:?}", resp);
 
     // upload an object from a file
-    let mut file = tokio::fs::File::open(
-        "/Users/codyoss/oss/google-cloud-rust/userexample/resources/upload-me.txt",
-    )
+    let mut file = tokio::fs::File::open(input_file_path)
     .await
     .unwrap();
 
     client
         .objects_service()
-        .insert("codyoss-workspace", Default::default())
+        .insert(bucket.clone(), Default::default())
         .name("rust-test-2.txt")
         .media_content_type("text/plain; charset=utf-8")
         .upload(&mut file)
@@ -37,7 +38,7 @@ async fn main() -> Result<()> {
     // Pull files its metadata
     let resp = client
         .objects_service()
-        .get("codyoss-workspace", "rust-test.txt")
+        .get(bucket.clone(), "rust-test.txt")
         .execute()
         .await?;
     info!("Updated metadata at: {:?}", resp.updated.unwrap());
@@ -46,7 +47,7 @@ async fn main() -> Result<()> {
     let mut buf: Vec<u8> = vec![];
     client
         .objects_service()
-        .get("codyoss-workspace", "rust-test.txt")
+        .get(bucket.clone(), "rust-test.txt")
         .download(&mut buf)
         .await?;
     info!("File contents: {}", String::from_utf8(buf).unwrap());
@@ -54,7 +55,7 @@ async fn main() -> Result<()> {
     // Iterate over a bucket (kinda)
     let resp = client
         .objects_service()
-        .list("codyoss-workspace")
+        .list(bucket)
         .execute()
         .await?;
     for item in resp.items.unwrap() {
